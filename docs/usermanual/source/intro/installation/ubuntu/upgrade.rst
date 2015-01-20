@@ -29,7 +29,7 @@ This section describes how to upgrade OpenGeo Suite to **OpenGeo Suite Enterpris
 
      .. code-block:: bash
 
-        echo "deb http://<username>:<password>@apt-ee.boundlessgeo.com/suite/v45/ubuntu/ trusty main" > /etc/apt/sources.list.d/opengeo.list
+        echo "deb https://<username>:<password>@apt-ee.boundlessgeo.com/suite/v45/ubuntu/ trusty main" > /etc/apt/sources.list.d/opengeo.list
 
    .. note:: If you have OpenGeo Suite Enterprise and do not have a user name and password, please `contact us <http://boundlessgeo.com/about/contact-us/sales>`__.
 

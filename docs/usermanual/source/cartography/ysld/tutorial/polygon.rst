@@ -61,7 +61,7 @@ Setting basic styling
 
 Polygon symbolizers provide options for styling both fill (inside) and stroke (outline) of features.
 
-#. Stroke styling is defined primarily by``stroke-width``, ``stroke-color``, and ``stroke-opacity``. Change the style to use a 0.5 px grey stroke:
+#. Stroke styling is defined primarily by ``stroke-width``, ``stroke-color``, and ``stroke-opacity``. Change the style to use a 0.5 px grey stroke:
 
 .. code-block:: yaml
       :emphasize-lines: 5-6

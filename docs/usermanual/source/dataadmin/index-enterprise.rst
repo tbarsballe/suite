@@ -17,4 +17,5 @@ This section describes some strategies on how to work with your data using OpenG
    mongodb/index
    gdal/index
    mrsid/index
+   geopackage/index
    importer/index

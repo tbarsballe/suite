@@ -7,15 +7,24 @@ Setting up Tomcat Manager
 
    This section only applies to the following versions of OpenGeo Suite:
 
-   * OpenGeo Suite for Ubuntu Linux
-   * OpenGeo Suite for Red Hat Linux
-   * OpenGeo Suite for Application Servers (when using **Tomcat**).
+   .. only:: basic
+
+      * OpenGeo Suite for Ubuntu Linux
+      * OpenGeo Suite for Red Hat Linux
+
+   .. only:: enterprise
+
+      * OpenGeo Suite for Ubuntu Linux
+      * OpenGeo Suite for Red Hat Linux
+      * OpenGeo Suite for Application Servers (when using **Tomcat**).
 
    OpenGeo Suite for Windows and OS X use `Jetty <http://www.eclipse.org/jetty/>`_, not Tomcat.
 
 `Apache Tomcat <http://tomcat.apache.org>`_ is the application server used on Linux-based installations of OpenGeo Suite. While Apache Tomcat has a graphical manager for loading and managing web applications, **the Tomcat Manager is not loaded with OpenGeo Suite by default**.
 
 This section will show you how to install the Tomcat Manager.
+
+.. note:: The Tomcat service used by OpenGeo Suite is pulled in from standard repository sources, and is not specific to OpenGeo Suite. The same is true for the Tomcat Manager.
 
 Installing via package manager
 ------------------------------

@@ -14,8 +14,9 @@ angular.module('gsApp.styleditor', [
   'gsApp.styleditor.display'
 ])
 .directive('styleEditor', ['$compile', '$sanitize', '$timeout', '$log',
-    'YsldHinter',
-    function($compile, $sanitize, $timeout, $log, YsldHinter) {
+    'YsldHinter', '$rootScope', '$sce',
+    function($compile, $sanitize, $timeout, $log, YsldHinter,
+      $rootScope, $sce) {
       return {
         restrict: 'EA',
         scope: {
@@ -27,12 +28,14 @@ angular.module('gsApp.styleditor', [
         templateUrl: '/components/styleditor/styleditor.tpl.html',
         controller: function($scope, $element) {
           $scope.onCodeMirrorLoad = function(editor) {
-            $scope.editor = editor;
+            $rootScope.editor = editor;
+
             editor.on('change', function(cm, change) {
-              if ('setValue' == change.origin) {
+              if (change.origin == 'setValue') {
                 $timeout(function() {
                   cm.clearHistory();
                 }, 0);
+                $rootScope.generation = cm.changeGeneration();
               }
             });
           };
@@ -105,7 +108,7 @@ angular.module('gsApp.styleditor', [
             if (newVal != null) {
               newVal.forEach(function(mark) {
                 var html = '<i class="icon-warning" ' +
-                  'popover="' + $sanitize(mark.problem) + '" ' +
+                  'popover="' + $sce.trustAsHtml(mark.problem) + '" ' +
                   'popover-placement="left" ' +
                   'popover-trigger="mouseenter" ' +
                   'popover-append-to-body="true"></i>';

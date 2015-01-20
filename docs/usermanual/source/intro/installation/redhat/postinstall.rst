@@ -12,7 +12,9 @@ OpenGeo Suite is comprised of two main services:
 
 #. The `Tomcat <http://tomcat.apache.org/>`_ web server that contains all the OpenGeo web applications such as GeoServer, GeoWebCache, and GeoExplorer. 
 
-#. The `PostgreSQL <http://www.postgresql.org/>`_ database server with the PostGIS spatial extensions. 
+#. The `PostgreSQL <http://www.postgresql.org/>`_ database server with the PostGIS spatial extensions.
+
+.. note:: The Tomcat service used by OpenGeo Suite is pulled in from standard repository sources, and is not specific to OpenGeo Suite.
 
 Controlling the Tomcat service
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

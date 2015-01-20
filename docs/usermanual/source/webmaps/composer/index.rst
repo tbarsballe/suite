@@ -19,4 +19,5 @@ This section will detail how to use Composer.
    tour
    configuration
    styleview
+   keys
    tutorial/index
