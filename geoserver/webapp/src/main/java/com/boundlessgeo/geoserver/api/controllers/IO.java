@@ -4,9 +4,12 @@
 package com.boundlessgeo.geoserver.api.controllers;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
@@ -19,6 +22,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import com.boundlessgeo.geoserver.util.RecentObjectCache.Ref;
+
 import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.lang.WordUtils;
 import org.geoserver.catalog.CoverageInfo;
@@ -735,6 +739,46 @@ public class IO {
             obj.put("workspace", ref.workspace);
         }
         date(obj.putObject("modified"), ref.modified);
+        return obj;
+    }
+    
+    public static JSONObj files(JSONObj obj, File root, int depth) throws IOException {
+        return files(obj, root, depth, new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return true;
+            }});
+    }
+
+    //Listing of files
+    public static JSONObj files(JSONObj obj, File root, int depth, FilenameFilter filter) throws IOException {
+        
+        BasicFileAttributes attr = Files.readAttributes(root.toPath(), BasicFileAttributes.class);
+        
+        obj.put("name", root.getName());
+        obj.put("size", root.getTotalSpace());
+        obj.put("modified", PRETTY_TIME.format(new Date(attr.lastModifiedTime().toMillis())));
+        obj.put("added", PRETTY_TIME.format(new Date(attr.creationTime().toMillis())));
+        
+        if (root.isDirectory()) {
+            obj.put("type", "folder");
+            //Only go depth deep. Ignore depth if depth < 0;
+            if (depth != 0) {
+                JSONArr children = obj.putArray("children");
+                for (File file : root.listFiles(filter)) {
+                    JSONObj child = children.addObject();
+                    files(child, file, depth-1, filter);
+                }
+            }
+            
+        } else {
+            obj.put("type", "file");
+        }
+        //Optional? Could just implement . and .. in api
+        if (filter.accept(root.getParentFile().getParentFile(), root.getParentFile().getName())) {
+            obj.put("parent", root.getParentFile().getName());
+        }
+        
         return obj;
     }
 }
