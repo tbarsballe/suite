@@ -165,8 +165,9 @@ public class LayerControllerTest {
     public void testGet() throws Exception {
         GeoServer gs = MockGeoServer.get().catalog()
             .workspace("foo", "http://scratch.org", true)
-                .layer("one").info("The layer", "This layer is cool!")
-                .featureType().defaults().store("foo")
+                .map("foo").defaults()
+                    .layer("one").info("The layer", "This layer is cool!")
+                    .featureType().defaults().store("foo")
             .geoServer().build(geoServer);
 
         MvcResult result = mvc.perform(get("/api/layers/foo/one"))
@@ -197,7 +198,9 @@ public class LayerControllerTest {
         assertEquals(90d, obj.object("bbox").object("lonlat").doub("north"), 0.1);
         assertEquals(0d, obj.object("bbox").object("lonlat").array("center").doub(0), 0.1);
         assertEquals(0d, obj.object("bbox").object("lonlat").array("center").doub(1), 0.1);
-
+        
+        assertEquals(1, obj.array("maps").size());
+        
         assertNotNull(obj.get("modified"));
         assertNotNull(obj.get("created"));
 

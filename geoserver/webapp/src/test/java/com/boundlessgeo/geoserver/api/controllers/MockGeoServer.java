@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import javax.xml.transform.TransformerException;
 
 
+
 //import org.apache.wicket.util.file.Files;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.CoverageInfo;
@@ -349,6 +350,19 @@ public class MockGeoServer {
             when(cat.getWorkspaceByName(name)).thenReturn(workspace);
             when(cat.getNamespaceByPrefix(name)).thenReturn(namespace);
             when(cat.getNamespaceByURI(uri)).thenReturn(namespace);
+            
+            when(cat.getLayerGroupsByWorkspace(name)).thenAnswer(new Answer() {
+
+                @Override
+                public Object answer(InvocationOnMock invocation) {
+                    List<LayerGroupInfo> mapList = new ArrayList<LayerGroupInfo>();
+                    for (MapBuilder map : maps) {
+                        mapList.add(map.map);
+                    }
+                    return mapList;
+                }
+                
+            });
 
             if (isDefault) {
                 when(cat.getDefaultWorkspace()).thenReturn(workspace);

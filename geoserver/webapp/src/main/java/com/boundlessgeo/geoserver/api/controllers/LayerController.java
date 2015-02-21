@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -642,6 +643,23 @@ public class LayerController extends ApiController {
 
     JSONObj layer(JSONObj obj, LayerInfo l, HttpServletRequest req) {
         IO.layerDetails(obj, l, req);
+        
+        JSONArr mapArr = obj.putArray("maps");
+        //Encode the list of all layerGroups that publish this layer
+        Catalog cat = geoServer.getCatalog();
+        String wsName = l.getResource().getNamespace().getPrefix();
+        
+        List<LayerGroupInfo> maps = cat.getLayerGroupsByWorkspace(wsName);
+        
+        for (LayerGroupInfo map : maps) {
+            if (map.getLayers().contains(l)) {
+                mapArr.addObject().put("name", map.getName())
+                    .put("workspace", wsName)
+                    .put("title", map.getTitle())
+                    .put("layerIndex", map.getLayers().indexOf(l));
+            }
+        }
+        
         if (!obj.has("modified")) {
             Resource r = dataDir().config(l);
             if (r.getType() != Type.UNDEFINED) {
