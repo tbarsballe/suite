@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -37,14 +38,16 @@ public class IndexController extends ApiController {
     }
     
     @RequestMapping(method= RequestMethod.GET)
-    public JSONArr get() {
-        JSONArr arr = new JSONArr();
+    public ModelAndView get() {
+        List<String> l = new ArrayList<String>();
         for (RequestMappingInfo mapping : this.handlerMapping.getHandlerMethods().keySet()) {
             for (String pattern : mapping.getPatternsCondition().getPatterns()) {
-                arr.add(pattern);
+                l.add(pattern);
             }
         }
-        return arr;
+        ModelAndView modelAndView = new ModelAndView("api");
+        modelAndView.addObject("patterns", l);
+        return modelAndView;
     }
 
 }
