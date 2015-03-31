@@ -6,6 +6,7 @@ package com.boundlessgeo.geoserver;
 import com.boundlessgeo.geoserver.api.controllers.IO;
 import com.boundlessgeo.geoserver.api.controllers.IconController;
 import com.boundlessgeo.geoserver.api.controllers.ImportController;
+import com.boundlessgeo.geoserver.api.controllers.ThumbnailController;
 import com.boundlessgeo.geoserver.api.controllers.WorkspaceController;
 import com.boundlessgeo.geoserver.json.JSONArr;
 import com.boundlessgeo.geoserver.json.JSONObj;
@@ -30,6 +31,7 @@ import org.geoserver.test.GeoServerSystemTestSupport;
 import org.geotools.referencing.CRS;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -46,11 +48,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -127,6 +127,21 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         assertEquals(1, obj.getInt("count"));
         arr = obj.getJSONArray("maps");
         assertEquals(1, arr.size());
+    }
+    
+    @Test
+    public void testThumbnail() throws Exception {
+        ThumbnailController ctrl = applicationContext.getBean(ThumbnailController.class);
+        
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setContextPath("/geoserver");
+        request.setRequestURI("/geoserver/hello");
+        request.setMethod("get");
+        
+        HttpEntity<byte[]> response = ctrl.getLayer("sf", "PrimitiveGeoFeature", false, request);
+        byte[] thumbnail = response.getBody();
+        assertNotNull(thumbnail);
+        
     }
 
     @Test

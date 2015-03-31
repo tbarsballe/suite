@@ -307,6 +307,7 @@ public class MapController extends ApiController {
         Date modified = new Date();
         Metadata.modified(map, modified);
         Metadata.modified(ws, modified);
+        Metadata.invalidateThumbnail(map);
 
         if(obj.has("change")){
             map.getMetadata().put("change", obj.str("change") );

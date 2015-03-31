@@ -5,7 +5,10 @@ package com.boundlessgeo.geoserver.api.controllers;
 
 import org.geoserver.catalog.Info;
 import org.geoserver.catalog.MetadataMap;
+import org.geoserver.catalog.PublishedInfo;
 import org.geoserver.ows.util.OwsUtils;
+import org.geoserver.platform.GeoServerResourceLoader;
+import org.geoserver.platform.resource.Resource;
 import org.geotools.util.Converters;
 
 import java.util.Date;
@@ -18,7 +21,31 @@ public class Metadata {
     static final String CREATED = "created";
     static final String MODIFIED = "modified";
     static final String IMPORTED = "imported";
-
+    
+    static final String THUMBNAIL = "thumbnail";
+    
+    public static void thumbnail(Info obj, Resource thumbnail) {
+        map(obj).put(THUMBNAIL, thumbnail.path());
+    }
+    
+    public static Resource thumbnail(Info obj, GeoServerResourceLoader rl) {
+        Object path = map(obj).get(THUMBNAIL);
+        if (path == null) {
+            return null;
+        }
+        return rl.get(path.toString());
+    }
+    
+    public static void invalidateThumbnail(PublishedInfo layer) {
+        //Allow a bit of leeway, to support GetMap composer format 
+        //(in case of getMap returning before put layer)
+        Date d = new Date(new Date().getTime()-1000);
+        if (d.before(Metadata.modified(layer))) {
+            return;
+        }
+        Metadata.map(layer).remove(Metadata.THUMBNAIL);
+    }
+    
     public static void created(Info obj, Date created) {
         MetadataMap map = map(obj);
         map.put(CREATED, created);

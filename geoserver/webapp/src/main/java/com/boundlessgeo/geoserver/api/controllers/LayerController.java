@@ -517,6 +517,8 @@ public class LayerController extends ApiController {
         }
 
         Metadata.modified(layer, new Date());
+        Metadata.invalidateThumbnail(layer);
+        //TODO: Invalidate map thumbnails
         Catalog cat = geoServer.getCatalog();
         cat.save(resource);
         cat.save(layer);
@@ -592,6 +594,8 @@ public class LayerController extends ApiController {
 
         Date mod = new Date();
         Metadata.modified(l, mod);
+        Metadata.invalidateThumbnail(l);
+        //TODO: Invalidate map thumbnails
 
         LayerGroupInfo map = null;
         if (mapName != null) {
