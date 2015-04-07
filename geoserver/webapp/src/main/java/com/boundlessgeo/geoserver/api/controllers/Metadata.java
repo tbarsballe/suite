@@ -11,6 +11,8 @@ import org.geoserver.platform.GeoServerResourceLoader;
 import org.geoserver.platform.resource.Resource;
 import org.geotools.util.Converters;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 import java.util.Date;
 
 /**
@@ -23,12 +25,21 @@ public class Metadata {
     static final String IMPORTED = "imported";
     
     static final String THUMBNAIL = "thumbnail";
+    static final String BBOX = "bbox";
     
-    public static void thumbnail(Info obj, Resource thumbnail) {
+    public static void bbox(PublishedInfo obj, Envelope bbox) {
+        map(obj).put(BBOX, bbox);
+    }
+    
+    public static Envelope bbox(PublishedInfo obj) {
+        return Converters.convert(map(obj).get(BBOX), Envelope.class);
+    }
+    
+    public static void thumbnail(PublishedInfo obj, Resource thumbnail) {
         map(obj).put(THUMBNAIL, thumbnail.path());
     }
     
-    public static Resource thumbnail(Info obj, GeoServerResourceLoader rl) {
+    public static Resource thumbnail(PublishedInfo obj, GeoServerResourceLoader rl) {
         Object path = map(obj).get(THUMBNAIL);
         if (path == null) {
             return null;
@@ -40,7 +51,7 @@ public class Metadata {
         //Allow a bit of leeway, to support GetMap composer format 
         //(in case of getMap returning before put layer)
         Date d = new Date(new Date().getTime()-1000);
-        if (d.before(Metadata.modified(layer))) {
+        if (Metadata.modified(layer) != null && d.before(Metadata.modified(layer))) {
             return;
         }
         Metadata.map(layer).remove(Metadata.THUMBNAIL);

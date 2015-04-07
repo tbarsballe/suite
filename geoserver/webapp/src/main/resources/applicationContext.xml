@@ -31,6 +31,12 @@
         <property name="beanId" value="layerListDemo2"/>
     </bean>
     
+    <!-- configure composer getMap format -->
+    <bean id="ComposerMapProducer" class="com.boundlessgeo.geoserver.wms.map.ComposerOutputFormat">
+      <constructor-arg ref="wms" />
+      <property name="extension" value="png"/>
+    </bean>
+    
     <!-- configure FTL template loading path -->
     <bean class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
       <property name="templateLoaderPath" value="/WEB-INF/ftl/"/>

@@ -1,16 +1,10 @@
 package com.boundlessgeo.geoserver.api.controllers;
 
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -26,7 +20,6 @@ import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.platform.GeoServerResourceLoader;
-import org.geoserver.platform.resource.Paths;
 import org.geoserver.platform.resource.Resource;
 import org.geoserver.platform.resource.Resources;
 import org.geoserver.platform.resource.Resource.Type;
@@ -34,7 +27,6 @@ import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
 import org.geoserver.wms.WebMap;
 import org.geoserver.wms.WebMapService;
-import org.geoserver.wms.map.RawMap;
 import org.geoserver.wms.map.RenderedImageMap;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.styling.Style;
@@ -50,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.boundlessgeo.geoserver.api.exceptions.NotFoundException;
+import com.boundlessgeo.geoserver.wms.map.ComposerOutputFormat;
 
 @Controller
 @RequestMapping("/api/thumbnails")
@@ -57,8 +50,6 @@ public class ThumbnailController extends ApiController {
     
     static final String TYPE = "png";
     static final String MIME_TYPE = "image/png";
-    static final String EXTENSION = ".png";
-    static final String EXTENSION_HR = "@2x.png";
     
     @Autowired
     @Qualifier("wmsServiceTarget")
@@ -105,7 +96,8 @@ public class ThumbnailController extends ApiController {
         }
         
         if (hiRes) {
-            resource = rl.get(resource.path().replaceAll(EXTENSION+"$", EXTENSION_HR));
+            resource = rl.get(resource.path().replaceAll(ComposerOutputFormat.EXTENSION+"$",
+                                                         ComposerOutputFormat.EXTENSION_HR));
         }
         if( resource.getType() != Type.RESOURCE ){
             throw new NotFoundException("Thumbnail for "+layer.prefixedName()+" could not be loaded");
@@ -132,7 +124,7 @@ public class ThumbnailController extends ApiController {
         Catalog catalog = geoServer.getCatalog();
         GeoServerResourceLoader rl = catalog.getResourceLoader();
         
-        Resource thumbnailDir = rl.get(Paths.path("workspaces",ws.getName(),layer.getName()));
+        Resource thumbnailDir = ComposerOutputFormat.thumbnailDirectory(layer, rl);
         
         //Set up getMap request
         GetMapRequest request = new GetMapRequest();
@@ -145,10 +137,7 @@ public class ThumbnailController extends ApiController {
             styles.add(((LayerInfo)layer).getDefaultStyle().getStyle());
             bbox = ((LayerInfo)layer).getResource().boundingBox();
         } else if (layer instanceof LayerGroupInfo) {
-            thumbnailDir = rl.get(Paths.path("workspaces",ws.getName(),"layergroups"));
-            
             LayerGroupHelper helper = new LayerGroupHelper((LayerGroupInfo)layer);
- 
             bbox = ((LayerGroupInfo)layer).getBounds();
             for (LayerInfo l : helper.allLayersForRendering()) {
                 layers.add(new MapLayerInfo(l));
@@ -163,14 +152,14 @@ public class ThumbnailController extends ApiController {
         request.setStyles(styles);
         request.setFormat(MIME_TYPE);
         
-        //TODO: Get view bbox
+        //Set the size of the HR thumbnail
         //Take the smallest bbox dimension as the min dimension. We can then crop the other 
         //dimension to give a square thumbnail
         request.setBbox(bbox);
         if (bbox.getWidth() < bbox.getHeight()) {
-            request.setWidth(175);
+            request.setWidth(2*ComposerOutputFormat.THUMBNAIL_SIZE);
         } else {
-            request.setHeight(175);
+            request.setHeight(2*ComposerOutputFormat.THUMBNAIL_SIZE);
         }
         
         //Run the getMap request through the WMS Reflector
@@ -187,29 +176,19 @@ public class ThumbnailController extends ApiController {
             throw new RuntimeException("Unsupported getMap response format:" + response.getClass().getName());
         }
         InputStream hiRes = new ByteArrayInputStream(os.toByteArray());
-        InputStream loRes = scaleImage(hiRes, 0.5);
+        InputStream loRes = ComposerOutputFormat.scaleImage(new ByteArrayInputStream(os.toByteArray()), 0.5);
         
         //Write the stream to a Resource
-        String filename = layer.getName()+"_"+new Date().getTime();
-        Resources.copy(loRes, thumbnailDir, filename+EXTENSION);
-        Resources.copy(hiRes, thumbnailDir, filename+EXTENSION_HR);
-        Resource thumbnail = thumbnailDir.get(filename+EXTENSION);
+        Resources.copy(loRes, thumbnailDir, ComposerOutputFormat.thumbnailFilename(layer));
+        Resources.copy(hiRes, thumbnailDir, ComposerOutputFormat.thumbnailFilename(layer, true));
+        Resource thumbnail = thumbnailDir.get(ComposerOutputFormat.thumbnailFilename(layer));
         //Save the resource
         Metadata.thumbnail(layer, thumbnail);
+        if (layer instanceof LayerInfo) {
+            catalog.save((LayerInfo)layer);
+        } else if (layer instanceof LayerGroupInfo) {
+            catalog.save((LayerGroupInfo)layer);
+        }
         return thumbnail;
-    }
-    
-    InputStream scaleImage(InputStream in, double scale) throws IOException {
-        BufferedImage image = ImageIO.read(in);
-        
-        AffineTransform scaleTransform = AffineTransform.getScaleInstance(scale, scale);
-        AffineTransformOp bilinearScaleOp = new AffineTransformOp(scaleTransform, AffineTransformOp.TYPE_BILINEAR);
-        
-        BufferedImage scaled =  bilinearScaleOp.filter(image,
-            new BufferedImage((int)(image.getWidth()*scale), (int)(image.getHeight()*scale), image.getType()));
-        
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImageIO.write(scaled, TYPE, os);
-        return new ByteArrayInputStream(os.toByteArray());
     }
 }
