@@ -24,7 +24,7 @@ public class Metadata {
     static final String MODIFIED = "modified";
     static final String IMPORTED = "imported";
     
-    static final String THUMBNAIL = "thumbnail";
+    public static final String THUMBNAIL = "thumbnail";
     static final String BBOX = "bbox";
     
     public static void bbox(PublishedInfo obj, Envelope bbox) {

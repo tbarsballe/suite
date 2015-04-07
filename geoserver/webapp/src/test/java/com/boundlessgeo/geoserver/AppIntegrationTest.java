@@ -646,7 +646,6 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         map = catalog.getLayerGroupByName("sf:map");
         
         assertNull(Metadata.thumbnail(layer, rl));
-        //TODO: Invalidate map
-        //assertNull(Metadata.thumbnail(map, rl));
+        assertNull(Metadata.thumbnail(map, rl));
     }
 }

@@ -37,6 +37,10 @@
       <property name="extension" value="png"/>
     </bean>
     
+    <bean class="com.boundlessgeo.geoserver.catalog.ThumbnailInvalidatingCatalogListener">
+      <constructor-arg ref="catalog"/>
+    </bean>
+    
     <!-- configure FTL template loading path -->
     <bean class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
       <property name="templateLoaderPath" value="/WEB-INF/ftl/"/>
