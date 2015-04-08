@@ -35,16 +35,12 @@ public class Metadata {
         return Converters.convert(map(obj).get(BBOX), Envelope.class);
     }
     
-    public static void thumbnail(PublishedInfo obj, Resource thumbnail) {
-        map(obj).put(THUMBNAIL, thumbnail.path());
+    public static void thumbnail(PublishedInfo obj, String path) {
+        map(obj).put(THUMBNAIL, path);
     }
     
-    public static Resource thumbnail(PublishedInfo obj, GeoServerResourceLoader rl) {
-        Object path = map(obj).get(THUMBNAIL);
-        if (path == null) {
-            return null;
-        }
-        return rl.get(path.toString());
+    public static String thumbnail(PublishedInfo obj) {
+        return (String)map(obj).get(THUMBNAIL);
     }
     
     public static void invalidateThumbnail(PublishedInfo layer) {

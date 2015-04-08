@@ -1,3 +1,6 @@
+/* (c) 2015 Boundless, http://boundlessgeo.com
+ * This code is licensed under the GPL 2.0 license.
+ */
 package com.boundlessgeo.geoserver.wms.map;
 
 import java.awt.geom.AffineTransform;
@@ -6,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -22,11 +26,6 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.LayerGroupInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.PublishedInfo;
-import org.geoserver.catalog.WorkspaceInfo;
-import org.geoserver.platform.GeoServerResourceLoader;
-import org.geoserver.platform.resource.Paths;
-import org.geoserver.platform.resource.Resource;
-import org.geoserver.platform.resource.Resources;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
 import org.geoserver.wms.WMS;
@@ -35,9 +34,12 @@ import org.geoserver.wms.map.RenderedImageMap;
 import org.geoserver.wms.map.RenderedImageMapOutputFormat;
 import org.geotools.util.logging.Logging;
 
+import com.boundlessgeo.geoserver.AppConfiguration;
 import com.boundlessgeo.geoserver.api.controllers.Metadata;
 
 public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
+    
+    AppConfiguration config;
     
     static final String FORMAT = "composer";
     static final String TYPE = "png";
@@ -51,8 +53,9 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
     /** A logger for this class. */
     private static final Logger LOGGER = Logging.getLogger(ComposerOutputFormat.class);
     
-    public ComposerOutputFormat(WMS wms) {
+    public ComposerOutputFormat(WMS wms, AppConfiguration config) {
         super(MIME_TYPE, new String[] {FORMAT}, wms);
+        this.config = config;
     }
     
     @Override
@@ -66,7 +69,6 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
         final GetMapRequest request = mapContent.getRequest();
         
         Catalog catalog = wms.getCatalog();
-        GeoServerResourceLoader rl = catalog.getResourceLoader();
         
         List<MapLayerInfo> mapLayers = request.getLayers();
         
@@ -74,14 +76,11 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
         LayerGroupInfo layerGroup = null;
         PublishedInfo info = null;
         
-        Resource thumbnailDir = null;
-        
         Object lg = request.getFormatOptions().get("layerGroup");
         if (lg == null) {
             if (mapLayers.size() == 1) {
                 layer = mapLayers.get(0).getLayerInfo();
                 info = layer;
-                thumbnailDir = thumbnailDirectory(layer, rl);
                 
             } else if (mapLayers.size() > 1) {
                 LOGGER.log(Level.WARNING, "Multiple layers but no layer group. Skipping thumbnails and metadata.");
@@ -98,7 +97,6 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
                 return map;
             }
             info = layerGroup;
-            thumbnailDir = thumbnailDirectory(layerGroup, rl);
         }
         
         //Create and save the thumbnails
@@ -110,36 +108,27 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             ImageIO.write(image, TYPE, os);
             
-            InputStream hiRes = scaleImage(new ByteArrayInputStream(os.toByteArray()), 2.0*scale);
-            InputStream loRes = scaleImage(new ByteArrayInputStream(os.toByteArray()), scale);
-            
-            //Write the stream to a Resource
-            String filename = info.getName();
-            Resources.copy(loRes, thumbnailDir, thumbnailFilename(info));
-            Resources.copy(hiRes, thumbnailDir, thumbnailFilename(info, true));
-            
-            Resource thumbnail = thumbnailDir.get(thumbnailFilename(info));
-            Metadata.thumbnail(info, thumbnail);
+            FileOutputStream loRes = null;
+            FileOutputStream hiRes = null;
+            try {
+                loRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(info)).getPath());
+                hiRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(info, true)).getPath());
+                
+                loRes.write(scaleImage(new ByteArrayInputStream(os.toByteArray()), scale));
+                hiRes.write(scaleImage(new ByteArrayInputStream(os.toByteArray()), 2.0*scale));
+            } finally {
+                if (loRes != null) { loRes.close(); }
+                if (hiRes != null) { hiRes.close(); }
+            }
+            Metadata.thumbnail(info, thumbnailFilename(info));
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to write thumbnails.");
         }
-        
         
         //Save current bbox to metadata
         Metadata.bbox(info, request.getBbox());
         
         return map;
-    }
-    
-    public static final Resource thumbnailDirectory(PublishedInfo layer, GeoServerResourceLoader rl) {
-        if (layer instanceof LayerInfo) {
-            WorkspaceInfo ws = ((LayerInfo)layer).getResource().getStore().getWorkspace();
-            return rl.get(Paths.path("workspaces",ws.getName(),ws.getName(),layer.getName()));
-        } else if (layer instanceof LayerGroupInfo) {
-            WorkspaceInfo ws = ((LayerGroupInfo)layer).getWorkspace();
-            return rl.get(Paths.path("workspaces",ws.getName(),"layergroups"));
-        }
-        return null;
     }
     
     //Produce a consistent filename for thumbnails
@@ -154,7 +143,7 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
         return layer.getId()+EXTENSION;
     }
     
-    public static final InputStream scaleImage(InputStream in, double scale) throws IOException {
+    public static final byte[] scaleImage(InputStream in, double scale) throws IOException {
         BufferedImage image = ImageIO.read(in);
         
         AffineTransform scaleTransform = AffineTransform.getScaleInstance(scale, scale);
@@ -165,6 +154,6 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
         
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImageIO.write(scaled, TYPE, os);
-        return new ByteArrayInputStream(os.toByteArray());
+        return os.toByteArray();
     }
 }

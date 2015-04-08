@@ -24,7 +24,6 @@ import org.geoserver.catalog.CatalogBuilder;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerGroupInfo;
 import org.geoserver.catalog.LayerInfo;
-import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.data.test.SystemTestData;
@@ -35,7 +34,6 @@ import org.geoserver.platform.resource.Resource;
 import org.geoserver.test.GeoServerSystemTestSupport;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
-import org.geoserver.wms.WMS;
 import org.geoserver.wms.WebMapService;
 import org.geotools.referencing.CRS;
 import org.junit.Before;
@@ -52,14 +50,10 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -511,9 +505,9 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
     @Test
     public void testThumbnail() throws Exception {
         ThumbnailController ctrl = applicationContext.getBean(ThumbnailController.class);
-        MapController mapCtrl = applicationContext.getBean(MapController.class);
         LayerController layerCtrl = applicationContext.getBean(LayerController.class);
         WebMapService wms = (WebMapService)applicationContext.getBean("wmsServiceTarget");
+        AppConfiguration config = applicationContext.getBean(AppConfiguration.class);
         
         //Setup map
         Catalog catalog = getCatalog();
@@ -526,10 +520,9 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         style.setFilename("style.sld");
         File styleFile = new File(rl.getBaseDirectory().getAbsolutePath()+"/styles/style.sld");
         Files.copy(getClass().getResourceAsStream("point.sld"), styleFile.toPath());
-        Resource styleResource = rl.get("style.sld");
         catalog.add(style);
-        layer.getStyles().clear();
-        layer.getStyles().add(style);
+        layer.setDefaultStyle(style);
+        catalog.save(layer);
 
         LayerGroupInfo map = catalog.getFactory().createLayerGroup();
         map.setWorkspace(catalog.getWorkspaceByName("sf"));
@@ -548,34 +541,34 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         request.setMethod("get");
         
         //Test initial get
-        assertNull(Metadata.thumbnail(layer, rl));
-        assertNull(Metadata.thumbnail(map, rl));
+        assertNull(Metadata.thumbnail(layer));
+        assertNull(Metadata.thumbnail(map));
         HttpEntity<byte[]> response = ctrl.getMap("sf", "map", false, request);
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(response.getBody()));
         
         //refresh the proxy object
         map = catalog.getLayerGroupByName("sf:map");
         
-        Resource imageResource = Metadata.thumbnail(map, rl);
-        assertNotNull(imageResource);
+        String thumbnailPath = Metadata.thumbnail(map);
+        assertNotNull(thumbnailPath);
         
-        File imageFile = imageResource.file();
+        File imageFile = config.getCacheFile(thumbnailPath);
         assertTrue(imageFile.exists());
         
         long lastModified = imageFile.lastModified();
         
         //Test cached get
         response = ctrl.getMap("sf", "map", true, request);
-        imageResource = Metadata.thumbnail(map, rl);
-        assertNotNull(imageResource);
+        thumbnailPath = Metadata.thumbnail(map);
+        assertNotNull(thumbnailPath);
         
-        imageFile = imageResource.file();
+        imageFile = config.getCacheFile(thumbnailPath);
         assertTrue(imageFile.exists());
         assertEquals(lastModified, imageFile.lastModified());
         
         //Test invalidate
         Metadata.invalidateThumbnail(map);
-        assertNull(Metadata.thumbnail(map, rl));
+        assertNull(Metadata.thumbnail(map));
         catalog.save(map);
         //file.lastModified is only accurate to the second
         Thread.sleep(2000);
@@ -583,10 +576,10 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         response = ctrl.getMap("sf", "map", true, request);
         map = catalog.getLayerGroupByName("sf:map");
         
-        imageResource = Metadata.thumbnail(map, rl);
-        assertNotNull(imageResource);
+        thumbnailPath = Metadata.thumbnail(map);
+        assertNotNull(thumbnailPath);
         
-        imageFile = imageResource.file();
+        imageFile = config.getCacheFile(thumbnailPath);
         assertTrue(imageFile.exists());
         long lm2 = imageFile.lastModified();
         assertTrue(lastModified < lm2);
@@ -608,10 +601,10 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         wms.getMapReflect(getMap);
         map = catalog.getLayerGroupByName("sf:map");
         
-        imageResource = Metadata.thumbnail(map, rl);
-        assertNotNull(imageResource);
+        thumbnailPath = Metadata.thumbnail(map);
+        assertNotNull(thumbnailPath);
         
-        imageFile = imageResource.file();
+        imageFile = config.getCacheFile(thumbnailPath);
         assertTrue(imageFile.exists());
         assertTrue(lastModified < imageFile.lastModified());
         
@@ -625,10 +618,10 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         
         //Update proxy
         layer = catalog.getLayerByName("sf:PrimitiveGeoFeature");
-        imageResource = Metadata.thumbnail(layer, rl);
-        assertNotNull(imageResource);
+        thumbnailPath = Metadata.thumbnail(layer);
+        assertNotNull(thumbnailPath);
         
-        imageFile = imageResource.file();
+        imageFile = config.getCacheFile(thumbnailPath);
         assertTrue(imageFile.exists());
         
         //Test layer invalidating map
@@ -645,7 +638,7 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         layer = catalog.getLayerByName("sf:PrimitiveGeoFeature");
         map = catalog.getLayerGroupByName("sf:map");
         
-        assertNull(Metadata.thumbnail(layer, rl));
-        assertNull(Metadata.thumbnail(map, rl));
+        assertNull(Metadata.thumbnail(layer));
+        assertNull(Metadata.thumbnail(map));
     }
 }

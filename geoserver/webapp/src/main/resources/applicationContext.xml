@@ -32,8 +32,13 @@
     </bean>
     
     <!-- configure composer getMap format -->
-    <bean id="ComposerMapProducer" class="com.boundlessgeo.geoserver.wms.map.ComposerOutputFormat">
+    <bean id="config" class="com.boundlessgeo.geoserver.AppConfiguration">
+      <constructor-arg ref="catalog"/>
+    </bean>
+    
+    <bean id="composerMapProducer" class="com.boundlessgeo.geoserver.wms.map.ComposerOutputFormat">
       <constructor-arg ref="wms" />
+      <constructor-arg ref="config" />
       <property name="extension" value="png"/>
     </bean>
     

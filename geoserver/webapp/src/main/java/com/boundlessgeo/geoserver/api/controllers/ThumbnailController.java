@@ -1,9 +1,14 @@
+/* (c) 2015 Boundless, http://boundlessgeo.com
+ * This code is licensed under the GPL 2.0 license.
+ */
 package com.boundlessgeo.geoserver.api.controllers;
 
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,10 +24,6 @@ import org.geoserver.catalog.PublishedInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.config.GeoServer;
-import org.geoserver.platform.GeoServerResourceLoader;
-import org.geoserver.platform.resource.Resource;
-import org.geoserver.platform.resource.Resources;
-import org.geoserver.platform.resource.Resource.Type;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
 import org.geoserver.wms.WebMap;
@@ -41,7 +42,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.boundlessgeo.geoserver.api.exceptions.NotFoundException;
+import com.boundlessgeo.geoserver.AppConfiguration;
 import com.boundlessgeo.geoserver.wms.map.ComposerOutputFormat;
 
 @Controller
@@ -54,6 +55,9 @@ public class ThumbnailController extends ApiController {
     @Autowired
     @Qualifier("wmsServiceTarget")
     WebMapService wms;
+    
+    @Autowired
+    AppConfiguration config;
     
     @Autowired
     public ThumbnailController(GeoServer geoServer) {
@@ -87,29 +91,30 @@ public class ThumbnailController extends ApiController {
     }
     
     public HttpEntity<byte[]> get(WorkspaceInfo ws, PublishedInfo layer, boolean hiRes) throws Exception {
-        GeoServerResourceLoader rl = geoServer.getCatalog().getResourceLoader();
-        Resource resource = Metadata.thumbnail(layer, rl);
+        String path = Metadata.thumbnail(layer);
+        FileInputStream in = null;
         
         //Has not been generated yet, use WMS reflector
-        if (resource == null) {
-            resource = createThumbnail(ws, layer);
+        if (path == null) {
+            createThumbnail(ws, layer);
+            path = Metadata.thumbnail(layer);
         }
-        
-        if (hiRes) {
-            resource = rl.get(resource.path().replaceAll(ComposerOutputFormat.EXTENSION+"$",
-                                                         ComposerOutputFormat.EXTENSION_HR));
-        }
-        if( resource.getType() != Type.RESOURCE ){
-            throw new NotFoundException("Thumbnail for "+layer.prefixedName()+" could not be loaded");
-        }
-        try (
-            InputStream in = resource.in();
-        ) {
+        try {
+            File thumbnailFile;
+            if (hiRes) {
+                thumbnailFile = config.getCacheFile(path.replaceAll(
+                        ComposerOutputFormat.EXTENSION+"$", ComposerOutputFormat.EXTENSION_HR));
+            } else {
+                thumbnailFile = config.getCacheFile(path);
+            }
+            in = new FileInputStream(thumbnailFile);
             byte[] bytes = IOUtils.toByteArray(in);
             final HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(MIME_TYPE));
-            headers.setLastModified(resource.lastmodified());
+            headers.setLastModified(thumbnailFile.lastModified());
             return new HttpEntity<byte[]>(bytes, headers);
+        } finally {
+            if (in != null) { in.close(); }
         }
     }
     
@@ -120,11 +125,8 @@ public class ThumbnailController extends ApiController {
      * @return The thumbnail image as a Resource
      * @throws Exception
      */
-    Resource createThumbnail(WorkspaceInfo ws, PublishedInfo layer) throws Exception {
+    protected void createThumbnail(WorkspaceInfo ws, PublishedInfo layer) throws Exception {
         Catalog catalog = geoServer.getCatalog();
-        GeoServerResourceLoader rl = catalog.getResourceLoader();
-        
-        Resource thumbnailDir = ComposerOutputFormat.thumbnailDirectory(layer, rl);
         
         //Set up getMap request
         GetMapRequest request = new GetMapRequest();
@@ -175,20 +177,25 @@ public class ThumbnailController extends ApiController {
         } else {
             throw new RuntimeException("Unsupported getMap response format:" + response.getClass().getName());
         }
-        InputStream hiRes = new ByteArrayInputStream(os.toByteArray());
-        InputStream loRes = ComposerOutputFormat.scaleImage(new ByteArrayInputStream(os.toByteArray()), 0.5);
         
-        //Write the stream to a Resource
-        Resources.copy(loRes, thumbnailDir, ComposerOutputFormat.thumbnailFilename(layer));
-        Resources.copy(hiRes, thumbnailDir, ComposerOutputFormat.thumbnailFilename(layer, true));
-        Resource thumbnail = thumbnailDir.get(ComposerOutputFormat.thumbnailFilename(layer));
-        //Save the resource
-        Metadata.thumbnail(layer, thumbnail);
+        FileOutputStream loRes = null;
+        FileOutputStream hiRes = null;
+        try {
+            loRes = new FileOutputStream(config.createCacheFile(ComposerOutputFormat.thumbnailFilename(layer)).getPath());
+            hiRes = new FileOutputStream(config.createCacheFile(ComposerOutputFormat.thumbnailFilename(layer, true)).getPath());
+            
+            loRes.write(ComposerOutputFormat.scaleImage(new ByteArrayInputStream(os.toByteArray()), 0.5));
+            hiRes.write(os.toByteArray());
+        } finally {
+            if (loRes != null) { loRes.close(); }
+            if (hiRes != null) { hiRes.close(); }
+        }
+        Metadata.thumbnail(layer, ComposerOutputFormat.thumbnailFilename(layer));
+        
         if (layer instanceof LayerInfo) {
             catalog.save((LayerInfo)layer);
         } else if (layer instanceof LayerGroupInfo) {
             catalog.save((LayerGroupInfo)layer);
         }
-        return thumbnail;
     }
 }
