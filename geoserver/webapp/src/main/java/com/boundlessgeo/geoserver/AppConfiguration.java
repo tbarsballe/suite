@@ -17,7 +17,9 @@ import org.geotools.util.logging.Logging;
 import org.springframework.web.context.ServletContextAware;
 
 /**
- * Tracks suite specific configuration, such as the Thumbnail Cache directory
+ * Tracks boundless suite specific configuration data:
+ * * Composer cache directory, used for storing cached thumbnails. 
+ *   Refer to {@link #lookupCacheDirectory(ServletContext)} for how this location is generated.
  */
 public class AppConfiguration implements ServletContextAware {
     Catalog catalog;
@@ -135,6 +137,10 @@ public class AppConfiguration implements ServletContextAware {
         cacheDir = lookupCacheDirectory(servletContext);
     }
 
+    /**
+     * Returns the location of the composer cache directory
+     * @return Path to the composer cache directory
+     */
     public String getCacheDir() {
         return cacheDir;
     }

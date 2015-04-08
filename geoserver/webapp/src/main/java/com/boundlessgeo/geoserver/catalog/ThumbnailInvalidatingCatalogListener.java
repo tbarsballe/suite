@@ -1,4 +1,4 @@
-/* (c) 2014-2015 Boundless, http://boundlessgeo.com
+/* (c) 2015 Boundless, http://boundlessgeo.com
  * This code is licensed under the GPL 2.0 license.
  */
 package com.boundlessgeo.geoserver.catalog;
@@ -18,6 +18,12 @@ import org.geoserver.catalog.event.CatalogRemoveEvent;
 
 import com.boundlessgeo.geoserver.api.controllers.Metadata;
 
+/**
+ * Removes thumbnail metadata from LayerInfo and LayerGroupInfo objects when those objects or any
+ * StyleInfo objects they depend upon are changed. This ensures the thumbnail listed in the metadata
+ * is always up to date.
+ *
+ */
 public class ThumbnailInvalidatingCatalogListener implements CatalogListener {
     Catalog catalog;
     //Prevent recursion
@@ -36,7 +42,6 @@ public class ThumbnailInvalidatingCatalogListener implements CatalogListener {
     @Override
     public void handleRemoveEvent(CatalogRemoveEvent event)
             throws CatalogException {
-        //TODO: Delete thumbnails?
         CatalogInfo source = event.getSource();
         
         //If we delete a style or layer used by a layer or map, invalidate upstream thumbnails
@@ -58,6 +63,9 @@ public class ThumbnailInvalidatingCatalogListener implements CatalogListener {
                         }
                     }
                 } else if(source instanceof LayerInfo) {
+                    LayerInfo layer = catalog.getLayer(source.getId());
+                    Metadata.invalidateThumbnail(layer);
+                    catalog.save(layer);
                     //Invalidate any maps using this layer
                     for (LayerGroupInfo layerGroup : catalog.getLayerGroups()) {
                         if (layerGroup.getLayers().contains(source)) {
@@ -65,18 +73,23 @@ public class ThumbnailInvalidatingCatalogListener implements CatalogListener {
                             catalog.save(layerGroup);
                         }
                     }
+                } else if (source instanceof LayerGroupInfo) {
+                    LayerGroupInfo layerGroup = catalog.getLayerGroup(source.getId());
+                    Metadata.invalidateThumbnail(layerGroup);
+                    catalog.save(layerGroup);
                 }
             } finally {
                 modifying = false;
             }
         }
     }
-
-    /* Invalidates all thumbnails that depend on the modified resources, by removing the thumbnail 
+    
+    /**
+     * Invalidates all thumbnails that depend on the modified resources, by removing the thumbnail 
      * entry from the associated metadata map. Only affects LayerInfo and LayerGroupInfo objects, 
-     * and only runs for StyleInfo, LayerInfo, or LayerGroupInfo objects. 
+     * and only runs for StyleInfo, LayerInfo, or LayerGroupInfo objects.
      * If the event updates the thumbnail entry, this new value is preserved for the source object, 
-     * but the thumbnails for all dependent objects are still invalidated
+     * but the thumbnails for all dependent objects are still invalidated.
      */
     @Override
     public void handleModifyEvent(CatalogModifyEvent event)
@@ -130,12 +143,12 @@ public class ThumbnailInvalidatingCatalogListener implements CatalogListener {
         
     }
     
-    /* Determines if this event changes the thumbnail entry in the metadata map. If so returns true,
+    /* 
+     * Determines if this event changes the thumbnail entry in the metadata map. If so returns true,
      * otherwise returns false.
      * 
      * If the event modifies the metadata map, and the metadata map contains a thumbnail entry that 
      * is not changed, invalidates the thumbnail entry by removing it from the metadata map.
-     * 
      */
     private boolean updateThumbnailEvent(CatalogModifyEvent event) {
         for (int i = 0; i < event.getNewValues().size(); i++) {
@@ -166,10 +179,7 @@ public class ThumbnailInvalidatingCatalogListener implements CatalogListener {
 
     @Override
     public void handlePostModifyEvent(CatalogPostModifyEvent event)
-            throws CatalogException { 
-        
-        
-    }
+            throws CatalogException { }
 
     @Override
     public void reloaded() { }

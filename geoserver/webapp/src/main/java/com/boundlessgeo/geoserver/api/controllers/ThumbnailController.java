@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.boundlessgeo.geoserver.AppConfiguration;
 import com.boundlessgeo.geoserver.wms.map.ComposerOutputFormat;
+import com.vividsolutions.jts.geom.Envelope;
 
 @Controller
 @RequestMapping("/api/thumbnails")
@@ -64,6 +65,16 @@ public class ThumbnailController extends ApiController {
         super(geoServer);
     }
     
+    /**
+     * Endpoint to retrieve a cached thumbnail for a map, generating it if it does not exist.
+     * If the request parameter "hiRes=true" is provided, returns a high-resolution (x2) thumbnail.
+     * @param wsName Workspace name
+     * @param name Map name
+     * @param hiRes Whether or not to return a high-res thumbnail. Optional, defaults to false
+     * @param request
+     * @return HttpEntity containing the thumbnail image as a byte array
+     * @throws Exception
+     */
     @RequestMapping(value = "/maps/{wsName:.+}/{name:.+}", method = RequestMethod.GET)
     public HttpEntity<byte[]> getMap(@PathVariable String wsName, 
             @PathVariable String name, 
@@ -77,6 +88,16 @@ public class ThumbnailController extends ApiController {
         return get(ws, map, hiRes);
     }
     
+    /**
+     * Endpoint to retrieve a cached thumbnail for a layer, generating it if it does not exist.
+     * If the request parameter "hiRes=true" is provided, returns a high-resolution (x2) thumbnail.
+     * @param wsName Workspace name
+     * @param name Layer name
+     * @param hiRes Whether or not to return a high-res thumbnail. Optional, defaults to false
+     * @param request
+     * @return HttpEntity containing the thumbnail image as a byte array
+     * @throws Exception
+     */
     @RequestMapping(value = "/layers/{wsName:.+}/{name:.+}", method = RequestMethod.GET)
     public HttpEntity<byte[]> getLayer(@PathVariable String wsName, 
             @PathVariable String name, 
@@ -90,6 +111,14 @@ public class ThumbnailController extends ApiController {
         return get(ws, layer, hiRes);
     }
     
+    /**
+     * Retrieve or create the thumbnail for a PublishedInfo
+     * @param ws Workspace for the layer
+     * @param layer LayerInfo or LayerGroupInfo to get the thumbnail of
+     * @param hiRes Flag to return hi-res (x2) thumbnail
+     * @return HttpEntity containing the thumbnail image as a byte array
+     * @throws Exception
+     */
     public HttpEntity<byte[]> get(WorkspaceInfo ws, PublishedInfo layer, boolean hiRes) throws Exception {
         String path = Metadata.thumbnail(layer);
         FileInputStream in = null;
@@ -133,7 +162,7 @@ public class ThumbnailController extends ApiController {
         
         List<MapLayerInfo> layers = new ArrayList<MapLayerInfo>();
         List<Style> styles = new ArrayList<Style>();
-        ReferencedEnvelope bbox = null;
+        Envelope bbox = null;
         if (layer instanceof LayerInfo) {
             layers.add(new MapLayerInfo((LayerInfo)layer));
             styles.add(((LayerInfo)layer).getDefaultStyle().getStyle());
@@ -154,6 +183,10 @@ public class ThumbnailController extends ApiController {
         request.setStyles(styles);
         request.setFormat(MIME_TYPE);
         
+        //If the last used bbox has been saved, use that
+        if (Metadata.bbox(layer) != null) {
+            bbox = Metadata.bbox(layer);
+        }
         //Set the size of the HR thumbnail
         //Take the smallest bbox dimension as the min dimension. We can then crop the other 
         //dimension to give a square thumbnail
@@ -168,7 +201,6 @@ public class ThumbnailController extends ApiController {
         WebMap response = wms.reflect(request);
         
         //Get the resulting map as a stream
-        //Other option is to use org.geoserver.ows.Response.write()
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         if (response instanceof RenderedImageMap) {
             RenderedImageMap map = (RenderedImageMap)response;
@@ -178,14 +210,16 @@ public class ThumbnailController extends ApiController {
             throw new RuntimeException("Unsupported getMap response format:" + response.getClass().getName());
         }
         
+        //Write the thumbnail files
         FileOutputStream loRes = null;
         FileOutputStream hiRes = null;
         try {
             loRes = new FileOutputStream(config.createCacheFile(ComposerOutputFormat.thumbnailFilename(layer)).getPath());
             hiRes = new FileOutputStream(config.createCacheFile(ComposerOutputFormat.thumbnailFilename(layer, true)).getPath());
             
-            loRes.write(ComposerOutputFormat.scaleImage(new ByteArrayInputStream(os.toByteArray()), 0.5));
-            hiRes.write(os.toByteArray());
+            loRes.write(ComposerOutputFormat.scaleImage(os.toByteArray(), 0.5, true));
+            //Don't scale, but crop to square
+            hiRes.write(ComposerOutputFormat.scaleImage(os.toByteArray(), 1.0, true));
         } finally {
             if (loRes != null) { loRes.close(); }
             if (hiRes != null) { hiRes.close(); }

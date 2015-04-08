@@ -27,6 +27,7 @@ public class Metadata {
     public static final String THUMBNAIL = "thumbnail";
     static final String BBOX = "bbox";
     
+    //Last viewed bounds
     public static void bbox(PublishedInfo obj, Envelope bbox) {
         map(obj).put(BBOX, bbox);
     }
@@ -35,6 +36,7 @@ public class Metadata {
         return Converters.convert(map(obj).get(BBOX), Envelope.class);
     }
     
+    //Relative thumbnail location
     public static void thumbnail(PublishedInfo obj, String path) {
         map(obj).put(THUMBNAIL, path);
     }
@@ -43,6 +45,7 @@ public class Metadata {
         return (String)map(obj).get(THUMBNAIL);
     }
     
+    //TODO: Delete thumbnail?
     public static void invalidateThumbnail(PublishedInfo layer) {
         //Allow a bit of leeway, to support GetMap composer format 
         //(in case of getMap returning before put layer)

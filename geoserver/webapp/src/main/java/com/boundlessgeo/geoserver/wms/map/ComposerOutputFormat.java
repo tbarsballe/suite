@@ -37,6 +37,17 @@ import org.geotools.util.logging.Logging;
 import com.boundlessgeo.geoserver.AppConfiguration;
 import com.boundlessgeo.geoserver.api.controllers.Metadata;
 
+/**
+ * Extension of the regular png map output format that also caches thumbnails and bounds whenever
+ * produceMap is called. Thumbnail files are cached to the cacheDir specified by AppConfiguration.
+ * The thumbnail location/filename and request bounds are saved to the metadata of the LayerGroupInfo 
+ * or LayerInfo object that this request involves.
+ * 
+ * To specify a Layer Group for the request, the request.getFormatOptions() map should include the 
+ * entry "layerGroup" with value equal to the Layer Group name. Requests with more then one layer 
+ * but no Layer Group will not cache thumbnails or other metadata, since there is no single target
+ * object to store this data.
+ */
 public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
     
     AppConfiguration config;
@@ -58,11 +69,17 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
         this.config = config;
     }
     
+    //Only include format "composer" so as to not conflict with the regular PNG format
     @Override
     public Set<String> getOutputFormatNames() {
         return outputFormatNames;
     }
     
+    /**
+     * Produce the map. 
+     * Create regular an high-res thumbnails by scaling the map image, and save these to the map/layer metadata
+     * Save the request bounds to the map/layer metadata
+     */
     @Override
     public RenderedImageMap produceMap(final WMSMapContent mapContent, final boolean tiled) {
         RenderedImageMap map = super.produceMap(mapContent, tiled);
@@ -114,8 +131,8 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
                 loRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(info)).getPath());
                 hiRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(info, true)).getPath());
                 
-                loRes.write(scaleImage(new ByteArrayInputStream(os.toByteArray()), scale));
-                hiRes.write(scaleImage(new ByteArrayInputStream(os.toByteArray()), 2.0*scale));
+                loRes.write(scaleImage(os.toByteArray(), scale, true));
+                hiRes.write(scaleImage(os.toByteArray(), 2.0*scale, true));
             } finally {
                 if (loRes != null) { loRes.close(); }
                 if (hiRes != null) { hiRes.close(); }
@@ -131,11 +148,21 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
         return map;
     }
     
-    //Produce a consistent filename for thumbnails
+    /**
+     * Utility method to generate a consistent thumbnail filename
+     * @param layer to create the filename for
+     * @return relative filename
+     */
     public static final String thumbnailFilename(PublishedInfo layer) {
         return thumbnailFilename(layer, false);
     }
     
+    /**
+     * Utility method to generate a consistent thumbnail filename
+     * @param layer to create the filename for
+     * @param hiRes is this the name of a hi-res thumbnail file?
+     * @return relative filename
+     */
     public static final String thumbnailFilename(PublishedInfo layer, boolean hiRes) {
         if (hiRes) {
             return layer.getId()+EXTENSION_HR;
@@ -143,14 +170,36 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
         return layer.getId()+EXTENSION;
     }
     
-    public static final byte[] scaleImage(InputStream in, double scale) throws IOException {
-        BufferedImage image = ImageIO.read(in);
-        
-        AffineTransform scaleTransform = AffineTransform.getScaleInstance(scale, scale);
-        AffineTransformOp bilinearScaleOp = new AffineTransformOp(scaleTransform, AffineTransformOp.TYPE_BILINEAR);
-        
-        BufferedImage scaled =  bilinearScaleOp.filter(image,
-            new BufferedImage((int)(image.getWidth()*scale), (int)(image.getHeight()*scale), image.getType()));
+    public static final byte[] scaleImage(byte[] in, double scale) throws IOException {
+        return scaleImage(in, scale, false);
+    }
+    /**
+     * Utility method for scaling thumbnails. Scales byte[] image by a scale factor.
+     * Optionally crops images to square.
+     * @param in byte[]m containing the input image
+     * @param scale Scale amount
+     * @param square Boolean flag to crop to a square image
+     * @return byte[] contianing the transformed image
+     * @throws IOException
+     */
+    public static final byte[] scaleImage(byte[] in, double scale, boolean square) throws IOException {
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(in));
+        BufferedImage scaled = image;
+        if (scale != 1.0) {
+            AffineTransform scaleTransform = AffineTransform.getScaleInstance(scale, scale);
+            AffineTransformOp bilinearScaleOp = new AffineTransformOp(scaleTransform, AffineTransformOp.TYPE_BILINEAR);
+            scaled =  bilinearScaleOp.filter(image, new BufferedImage(
+                    (int)(image.getWidth()*scale), (int)(image.getHeight()*scale), image.getType()));
+        }
+        if (square) {
+            if (scaled.getHeight() > scaled.getWidth()) {
+                scaled = scaled.getSubimage(0, (scaled.getHeight() - scaled.getWidth())/2, 
+                                            scaled.getWidth(), scaled.getWidth());
+            } else if (scaled.getHeight() < scaled.getWidth()) {
+                scaled = scaled.getSubimage((scaled.getWidth() - scaled.getHeight())/2, 0,
+                                            scaled.getHeight(), scaled.getHeight());
+            }
+        }
         
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImageIO.write(scaled, TYPE, os);
