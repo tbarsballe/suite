@@ -45,11 +45,12 @@ public class Metadata {
         return (String)map(obj).get(THUMBNAIL);
     }
     
+    public static final int INVALIDATION_MARGIN = 1000;
     //TODO: Delete thumbnail?
     public static void invalidateThumbnail(PublishedInfo layer) {
         //Allow a bit of leeway, to support GetMap composer format 
         //(in case of getMap returning before put layer)
-        Date d = new Date(new Date().getTime()-1000);
+        Date d = new Date(System.currentTimeMillis()-INVALIDATION_MARGIN);
         if (Metadata.modified(layer) != null && d.before(Metadata.modified(layer))) {
             return;
         }

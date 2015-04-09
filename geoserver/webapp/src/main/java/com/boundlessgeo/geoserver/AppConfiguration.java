@@ -13,6 +13,7 @@ import javax.servlet.ServletContext;
 
 import org.geoserver.catalog.Catalog;
 import org.geoserver.config.GeoServerDataDirectory;
+import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.util.logging.Logging;
 import org.springframework.web.context.ServletContextAware;
 
@@ -34,19 +35,9 @@ public class AppConfiguration implements ServletContextAware {
     }
     
     /**
-     * Determines the location of the composer thumbnail cache directory based on the following lookup
-     * mechanism:
-     *  
-     * 1) Java environment variable
-     * 2) Servlet context variable
-     * 3) System variable 
-     *
-     * For each of these, the methods checks that
-     * 1) The path exists
-     * 2) Is a directory
-     * 3) Is writable
-     * 
-     * If all of these lookups fail, uses the default value of GEOSERVER_DATA_DIR/composer
+     * Determines the location of the composer thumbnail cache directory by running a property 
+     * lookup on COMPOSER_CACHE_DIR. If this property is not found, uses the default value of 
+     * GEOSERVER_DATA_DIR/composer
      * 
      * @param servContext The servlet context.
      * @return String The absolute path to the data directory, or <code>null</code> if it could not
@@ -54,53 +45,13 @@ public class AppConfiguration implements ServletContextAware {
      */
     private String lookupCacheDirectory(ServletContext servContext) {
         
-        final String[] typeStrs = { "Java environment variable ",
-                "Servlet context parameter ", "System environment variable " };
-        
-        final String[] varStrs = { "COMPOSER_CACHE_DIR" };
-        
-        String cacheDir = null;
-        
-        // Loop over variable names
-        for (int i = 0; i < varStrs.length && cacheDir == null; i++) {
-            // Loop over variable access methods
-            for (int j = 0; j < typeStrs.length && cacheDir == null; j++) {
-                String value = null;
-                String varStr = varStrs[i];
-                String typeStr = typeStrs[j];
-                
-                // Lookup section
-                switch (j) {
-                case 0:
-                    value = System.getProperty(varStr);
-                    break;
-                case 1:
-                    value = servContext.getInitParameter(varStr);
-                    break;
-                case 2:
-                    value = System.getenv(varStr);
-                    break;
-                }
-                
-                if (value == null || value.equalsIgnoreCase("")) {
-                    LOGGER.finer("Found " + typeStr + varStr + " to be unset");
-                    continue;
-                }
-                
-                // Verify section
-                if (verifyPath(value, "Found " + typeStr + varStr + " set to " + value)) {
-                    cacheDir = value;
-                }
-            }
-        }
+        //Try property lookup
+        String cacheDir = GeoServerExtensions.getProperty("COMPOSER_CACHE_DIR", servContext);
         
         //Use the default of data/composer
         if(cacheDir == null) {
-            cacheDir = (new GeoServerDataDirectory(catalog.getResourceLoader()).root().getPath())
+            cacheDir = (GeoServerExtensions.bean(GeoServerDataDirectory.class).root().getPath())
                     +File.separator+"composer";
-            if (verifyPath(cacheDir, "Trying default composer cache directory " + cacheDir)) {
-                LOGGER.info("COMPOSER_CACHE_DIR not set, using default value: " + cacheDir);
-            }
         }
         try {
             File cacheFile = new File(cacheDir);
@@ -113,24 +64,6 @@ public class AppConfiguration implements ServletContextAware {
         return cacheDir;
     }
     
-    private boolean verifyPath(String path, String msgPrefix) {
-        File fh = new File(path);
-        
-        if (!fh.exists()) {
-            LOGGER.warning(msgPrefix + " , but this path does not exist");
-            return false;
-        }
-        if (!fh.isDirectory()) {
-            LOGGER.warning(msgPrefix + " , which is not a directory");
-            return false;
-        }
-        if (!fh.canWrite()) {
-            LOGGER.warning(msgPrefix + " , which is not writeable");
-            return false;
-        }
-        return true;
-    }
-
     @Override
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;

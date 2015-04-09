@@ -57,7 +57,7 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
     static final String MIME_TYPE = "image/png";
     public static final String EXTENSION = ".png";
     public static final String EXTENSION_HR = "@2x.png";
-    public static final int THUMBNAIL_SIZE = 175;
+    public static final int THUMBNAIL_SIZE = 75;
     
     static final Set<String> outputFormatNames = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[] { FORMAT })));
     

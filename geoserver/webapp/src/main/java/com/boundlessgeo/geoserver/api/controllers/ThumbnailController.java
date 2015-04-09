@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -128,8 +129,15 @@ public class ThumbnailController extends ApiController {
             createThumbnail(ws, layer);
             path = Metadata.thumbnail(layer);
         }
+        File thumbnailFile;
+        //If the file has been deleted, recreate it
         try {
-            File thumbnailFile;
+            thumbnailFile = config.getCacheFile(path);
+        } catch (FileNotFoundException e) {
+            createThumbnail(ws, layer);
+            path = Metadata.thumbnail(layer);
+        }
+        try {
             if (hiRes) {
                 thumbnailFile = config.getCacheFile(path.replaceAll(
                         ComposerOutputFormat.EXTENSION+"$", ComposerOutputFormat.EXTENSION_HR));
@@ -170,11 +178,18 @@ public class ThumbnailController extends ApiController {
         } else if (layer instanceof LayerGroupInfo) {
             LayerGroupHelper helper = new LayerGroupHelper((LayerGroupInfo)layer);
             bbox = ((LayerGroupInfo)layer).getBounds();
-            for (LayerInfo l : helper.allLayersForRendering()) {
-                layers.add(new MapLayerInfo(l));
+            
+            List<LayerInfo> layerList = helper.allLayersForRendering();
+            for (int i = 0; i  < layerList.size(); i++) {
+                layers.add(new MapLayerInfo(layerList.get(i)));
             }
-            for (StyleInfo s : helper.allStylesForRendering()) {
-                styles.add(s.getStyle());
+            List<StyleInfo> styleList = helper.allStylesForRendering();
+            for (int i = 0; i  < styleList.size(); i++) {
+                if (styleList.get(i) == null) {
+                    styles.add(layerList.get(i).getDefaultStyle().getStyle());
+                } else {
+                    styles.add(styleList.get(i).getStyle());
+                }
             }
         } else {
             throw new RuntimeException("layer must be one of LayerInfo or LayerGroupInfo");

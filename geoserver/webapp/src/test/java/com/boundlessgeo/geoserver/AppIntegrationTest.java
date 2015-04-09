@@ -28,6 +28,7 @@ import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.data.test.SystemTestData;
 import org.geoserver.importer.Importer;
+import org.geoserver.importer.StyleGenerator;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geoserver.platform.resource.Resource;
@@ -509,17 +510,29 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         WebMapService wms = (WebMapService)applicationContext.getBean("wmsServiceTarget");
         AppConfiguration config = applicationContext.getBean(AppConfiguration.class);
         
+        //Precision on file.lastModified for the current architecture
+        int filePrecision = 1000;
+        if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
+            //Still keep a small delay, just in case
+            filePrecision = 10;
+        }
+        
         //Setup map
         Catalog catalog = getCatalog();
         CatalogBuilder catBuilder = new CatalogBuilder(catalog);
         GeoServerResourceLoader rl = catalog.getResourceLoader();
 
         LayerInfo layer = catalog.getLayerByName("sf:PrimitiveGeoFeature");
+        
+        StyleGenerator styleGenerator = new StyleGenerator(catalog);
+        StyleInfo style = styleGenerator.createStyle((FeatureTypeInfo)layer.getResource());
+        /*
         StyleInfo style = catalog.getFactory().createStyle();
         style.setName("style");
         style.setFilename("style.sld");
         File styleFile = new File(rl.getBaseDirectory().getAbsolutePath()+"/styles/style.sld");
         Files.copy(getClass().getResourceAsStream("point.sld"), styleFile.toPath());
+        */
         catalog.add(style);
         layer.setDefaultStyle(style);
         catalog.save(layer);
@@ -571,7 +584,7 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         assertNull(Metadata.thumbnail(map));
         catalog.save(map);
         //file.lastModified is only accurate to the second
-        Thread.sleep(2000);
+        Thread.sleep(filePrecision);
         
         response = ctrl.getMap("sf", "map", true, request);
         map = catalog.getLayerGroupByName("sf:map");
@@ -596,7 +609,7 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         getMap.setStyles(Arrays.asList(layer.getDefaultStyle().getStyle()));
         
         //file.lastModified is only accurate to the second
-        Thread.sleep(2000);
+        Thread.sleep(filePrecision);
         
         wms.getMapReflect(getMap);
         map = catalog.getLayerGroupByName("sf:map");
@@ -631,7 +644,7 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         request.setMethod("put");
         
         //Delay so invalidation margin is exceeded
-        Thread.sleep(2000);
+        Thread.sleep(Metadata.INVALIDATION_MARGIN);
         layerCtrl.put("sf", "PrimitiveGeoFeature", new JSONObj().put("title", layer.getTitle()), request);
         
         //Update proxy

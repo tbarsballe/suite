@@ -156,23 +156,37 @@ public class ThumbnailInvalidatingCatalogListener implements CatalogListener {
                 MetadataMap oldMap = (MetadataMap)event.getOldValues().get(i);
                 MetadataMap newMap = (MetadataMap)event.getNewValues().get(i);
                 
-                //Modify thumbnail entry
-                if (oldMap.containsKey(Metadata.THUMBNAIL) && newMap.containsKey(Metadata.THUMBNAIL)
-                        && oldMap.get(Metadata.THUMBNAIL) != newMap.get(Metadata.THUMBNAIL) ) {
+                if (updateMetadataMap(oldMap, newMap)) {
                     return true;
-                }
-                //Add or remove thumbnail entry
-                if ((oldMap.containsKey(Metadata.THUMBNAIL) && !newMap.containsKey(Metadata.THUMBNAIL))
-                        || (!oldMap.containsKey(Metadata.THUMBNAIL) && newMap.containsKey(Metadata.THUMBNAIL))) {
-                    return true;
-                }
-                //If the metadata map changes but the thumbnail does not, remove the thumbnail 
-                //from the map to invalidate it.
-                if (oldMap.containsKey(Metadata.THUMBNAIL) && newMap.containsKey(Metadata.THUMBNAIL)
-                        && oldMap.get(Metadata.THUMBNAIL) == newMap.get(Metadata.THUMBNAIL) ) {
-                    newMap.remove(Metadata.THUMBNAIL);
                 }
             }
+        }
+        return false;
+    }
+    
+    /* 
+     * Determines if the metadata maps contain thumbnail entries and if the entries are different.
+     * If so returns true, otherwise returns false.
+     * 
+     * If both maps contain thumbnail entries that are identical, 
+     * this method removes the thumbnail entry from newMap.
+     */
+    protected static boolean updateMetadataMap(MetadataMap oldMap, MetadataMap newMap) {
+        //Modify thumbnail entry
+        if (oldMap.containsKey(Metadata.THUMBNAIL) && newMap.containsKey(Metadata.THUMBNAIL)
+                && !oldMap.get(Metadata.THUMBNAIL).equals(newMap.get(Metadata.THUMBNAIL)) ) {
+            return true;
+        }
+        //Add or remove thumbnail entry
+        if ((oldMap.containsKey(Metadata.THUMBNAIL) && !newMap.containsKey(Metadata.THUMBNAIL))
+                || (!oldMap.containsKey(Metadata.THUMBNAIL) && newMap.containsKey(Metadata.THUMBNAIL))) {
+            return true;
+        }
+        //If the metadata map changes but the thumbnail does not, remove the thumbnail 
+        //from the map to invalidate it.
+        if (oldMap.containsKey(Metadata.THUMBNAIL) && newMap.containsKey(Metadata.THUMBNAIL)
+                && oldMap.get(Metadata.THUMBNAIL).equals(newMap.get(Metadata.THUMBNAIL)) ) {
+            newMap.remove(Metadata.THUMBNAIL);
         }
         return false;
     }
