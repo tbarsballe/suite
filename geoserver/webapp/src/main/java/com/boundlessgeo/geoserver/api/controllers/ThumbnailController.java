@@ -14,8 +14,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -29,12 +33,14 @@ import org.geoserver.catalog.PublishedInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.config.GeoServer;
+import org.geoserver.platform.resource.Files;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
 import org.geoserver.wms.WebMap;
 import org.geoserver.wms.WebMapService;
 import org.geoserver.wms.map.RenderedImageMap;
 import org.geotools.styling.Style;
+import org.geotools.util.logging.Logging;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -53,6 +59,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @RequestMapping("/api/thumbnails")
 public class ThumbnailController extends ApiController {
     
+    private static Logger LOG = Logging.getLogger(ThumbnailController.class);
     static final String TYPE = "png";
     static final String MIME_TYPE = "image/png";
     public static final String EXTENSION = ".png";
@@ -215,7 +222,6 @@ public class ThumbnailController extends ApiController {
         
         //Run the getMap request through the WMS Reflector
         WebMap response = wms.reflect(request);
-        
         //Get the resulting map as a stream
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         if (response instanceof RenderedImageMap) {
@@ -229,16 +235,72 @@ public class ThumbnailController extends ApiController {
         //Write the thumbnail files
         FileOutputStream loRes = null;
         FileOutputStream hiRes = null;
+        
+        FileLock loResLock = null;
+        FileLock hiResLock = null;
+        RandomAccessFile loResRAF = null;
+        RandomAccessFile hiResRAF = null;
+        
         try {
-            loRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(layer)).getPath());
-            hiRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(layer, true)).getPath());
+            loResRAF = new RandomAccessFile(config.createCacheFile(thumbnailFilename(layer)), "rw");
+            hiResRAF = new RandomAccessFile(config.createCacheFile(thumbnailFilename(layer, true)), "rw");
+            
+            loResLock = loResRAF.getChannel().tryLock();
+            hiResLock = hiResRAF.getChannel().tryLock();
+            
+            if (loResLock == null || hiResLock == null) {
+                throw new IOException ("Thumbnail file(s) not available for writing.");
+            }
+            loRes = new FileOutputStream(loResRAF.getFD());
+            hiRes = new FileOutputStream(hiResRAF.getFD());
             
             loRes.write(scaleImage(os.toByteArray(), 0.5, true));
             //Don't scale, but crop to square
             hiRes.write(scaleImage(os.toByteArray(), 1.0, true));
         } finally {
-            if (loRes != null) { loRes.close(); }
-            if (hiRes != null) { hiRes.close(); }
+            //Release all locks and close all streams
+            if (loResLock != null) {
+                try {
+                    loResLock.release();
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Error releasing lock", e);
+                }
+            }
+            if (hiResLock != null) {
+                try {
+                    hiResLock.release();
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Error releasing lock", e);
+                }
+            }
+            if (loResRAF != null) { 
+                try {
+                    loResRAF.close(); 
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Error closing file", e);
+                }
+            }
+            if (hiResRAF != null) { 
+                try {
+                    hiResRAF.close();
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Error closing file", e);
+                }
+            }
+            if (loRes != null) { 
+                try {
+                    loRes.close(); 
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Error closing file", e);
+                }
+            }
+            if (hiRes != null) { 
+                try {
+                    hiRes.close();
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Error closing file", e);
+                }
+            }
         }
         Metadata.thumbnail(layer, thumbnailFilename(layer));
         
