@@ -31,18 +31,9 @@
         <property name="beanId" value="layerListDemo2"/>
     </bean>
     
-    <!-- configure composer getMap format -->
+    <!-- configure thumbnail cache -->
     <bean id="config" class="com.boundlessgeo.geoserver.AppConfiguration">
       <constructor-arg ref="catalog"/>
-    </bean>
-    
-    <bean id="composerMapResponse" class="com.boundlessgeo.geoserver.wms.map.ComposerMapResponse">
-      <constructor-arg ref="wms" />
-    </bean>
-    
-    <bean id="composerMapProducer" class="com.boundlessgeo.geoserver.wms.map.ComposerOutputFormat">
-      <constructor-arg ref="wms" />
-      <constructor-arg ref="config" />
     </bean>
     
     <bean class="com.boundlessgeo.geoserver.catalog.ThumbnailInvalidatingCatalogListener">

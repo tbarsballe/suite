@@ -7,7 +7,6 @@ import com.boundlessgeo.geoserver.api.controllers.IO;
 import com.boundlessgeo.geoserver.api.controllers.IconController;
 import com.boundlessgeo.geoserver.api.controllers.ImportController;
 import com.boundlessgeo.geoserver.api.controllers.LayerController;
-import com.boundlessgeo.geoserver.api.controllers.MapController;
 import com.boundlessgeo.geoserver.api.controllers.Metadata;
 import com.boundlessgeo.geoserver.api.controllers.ThumbnailController;
 import com.boundlessgeo.geoserver.api.controllers.WorkspaceController;
@@ -30,12 +29,8 @@ import org.geoserver.data.test.SystemTestData;
 import org.geoserver.importer.Importer;
 import org.geoserver.importer.StyleGenerator;
 import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.platform.GeoServerResourceLoader;
 import org.geoserver.platform.resource.Resource;
 import org.geoserver.test.GeoServerSystemTestSupport;
-import org.geoserver.wms.GetMapRequest;
-import org.geoserver.wms.MapLayerInfo;
-import org.geoserver.wms.WebMapService;
 import org.geotools.referencing.CRS;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,10 +54,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -507,7 +499,6 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
     public void testThumbnail() throws Exception {
         ThumbnailController ctrl = applicationContext.getBean(ThumbnailController.class);
         LayerController layerCtrl = applicationContext.getBean(LayerController.class);
-        WebMapService wms = (WebMapService)applicationContext.getBean("wmsServiceTarget");
         AppConfiguration config = applicationContext.getBean(AppConfiguration.class);
         
         //Precision on file.lastModified for the current architecture
@@ -520,7 +511,6 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         //Setup map
         Catalog catalog = getCatalog();
         CatalogBuilder catBuilder = new CatalogBuilder(catalog);
-        GeoServerResourceLoader rl = catalog.getResourceLoader();
 
         LayerInfo layer = catalog.getLayerByName("sf:PrimitiveGeoFeature");
         
@@ -599,27 +589,7 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         
         lastModified = imageFile.lastModified();
         
-        //Test ComposerOutputFormat
-        GetMapRequest getMap = new GetMapRequest();
-        getMap.setFormat("composer");
-        Map<String,String> formatOptions = new HashMap<String,String>();
-        formatOptions.put("layerGroup", "sf:map");
-        getMap.setFormatOptions(formatOptions);
-        getMap.setLayers(Arrays.asList(new MapLayerInfo(layer)));
-        getMap.setStyles(Arrays.asList(layer.getDefaultStyle().getStyle()));
         
-        //file.lastModified is only accurate to the second
-        Thread.sleep(filePrecision);
-        
-        wms.getMapReflect(getMap);
-        map = catalog.getLayerGroupByName("sf:map");
-        
-        thumbnailPath = Metadata.thumbnail(map);
-        assertNotNull(thumbnailPath);
-        
-        imageFile = config.getCacheFile(thumbnailPath);
-        assertTrue(imageFile.exists());
-        assertTrue(lastModified < imageFile.lastModified());
         
         //Test layer get
         response = ctrl.getLayer("sf", "PrimitiveGeoFeature", true, request);
@@ -643,8 +613,6 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         request.setRequestURI("/geoserver/hello");
         request.setMethod("put");
         
-        //Delay so invalidation margin is exceeded
-        Thread.sleep(Metadata.INVALIDATION_MARGIN);
         layerCtrl.put("sf", "PrimitiveGeoFeature", new JSONObj().put("title", layer.getTitle()), request);
         
         //Update proxy

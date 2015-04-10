@@ -7,11 +7,7 @@ import org.geoserver.catalog.Info;
 import org.geoserver.catalog.MetadataMap;
 import org.geoserver.catalog.PublishedInfo;
 import org.geoserver.ows.util.OwsUtils;
-import org.geoserver.platform.GeoServerResourceLoader;
-import org.geoserver.platform.resource.Resource;
 import org.geotools.util.Converters;
-
-import com.vividsolutions.jts.geom.Envelope;
 
 import java.util.Date;
 
@@ -25,16 +21,6 @@ public class Metadata {
     static final String IMPORTED = "imported";
     
     public static final String THUMBNAIL = "thumbnail";
-    static final String BBOX = "bbox";
-    
-    //Last viewed bounds
-    public static void bbox(PublishedInfo obj, Envelope bbox) {
-        map(obj).put(BBOX, bbox);
-    }
-    
-    public static Envelope bbox(PublishedInfo obj) {
-        return Converters.convert(map(obj).get(BBOX), Envelope.class);
-    }
     
     //Relative thumbnail location
     public static void thumbnail(PublishedInfo obj, String path) {
@@ -45,15 +31,7 @@ public class Metadata {
         return (String)map(obj).get(THUMBNAIL);
     }
     
-    public static final int INVALIDATION_MARGIN = 1000;
-    //TODO: Delete thumbnail?
     public static void invalidateThumbnail(PublishedInfo layer) {
-        //Allow a bit of leeway, to support GetMap composer format 
-        //(in case of getMap returning before put layer)
-        Date d = new Date(System.currentTimeMillis()-INVALIDATION_MARGIN);
-        if (Metadata.modified(layer) != null && d.before(Metadata.modified(layer))) {
-            return;
-        }
         Metadata.map(layer).remove(Metadata.THUMBNAIL);
     }
     

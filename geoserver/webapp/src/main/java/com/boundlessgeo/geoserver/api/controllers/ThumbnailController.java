@@ -3,6 +3,9 @@
  */
 package com.boundlessgeo.geoserver.api.controllers;
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -10,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +34,6 @@ import org.geoserver.wms.MapLayerInfo;
 import org.geoserver.wms.WebMap;
 import org.geoserver.wms.WebMapService;
 import org.geoserver.wms.map.RenderedImageMap;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.styling.Style;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,7 +47,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.boundlessgeo.geoserver.AppConfiguration;
-import com.boundlessgeo.geoserver.wms.map.ComposerOutputFormat;
 import com.vividsolutions.jts.geom.Envelope;
 
 @Controller
@@ -53,6 +55,9 @@ public class ThumbnailController extends ApiController {
     
     static final String TYPE = "png";
     static final String MIME_TYPE = "image/png";
+    public static final String EXTENSION = ".png";
+    public static final String EXTENSION_HR = "@2x.png";
+    public static final int THUMBNAIL_SIZE = 75;
     
     @Autowired
     @Qualifier("wmsServiceTarget")
@@ -140,7 +145,7 @@ public class ThumbnailController extends ApiController {
         try {
             if (hiRes) {
                 thumbnailFile = config.getCacheFile(path.replaceAll(
-                        ComposerOutputFormat.EXTENSION+"$", ComposerOutputFormat.EXTENSION_HR));
+                        EXTENSION+"$", EXTENSION_HR));
             } else {
                 thumbnailFile = config.getCacheFile(path);
             }
@@ -198,18 +203,14 @@ public class ThumbnailController extends ApiController {
         request.setStyles(styles);
         request.setFormat(MIME_TYPE);
         
-        //If the last used bbox has been saved, use that
-        if (Metadata.bbox(layer) != null) {
-            bbox = Metadata.bbox(layer);
-        }
         //Set the size of the HR thumbnail
         //Take the smallest bbox dimension as the min dimension. We can then crop the other 
         //dimension to give a square thumbnail
         request.setBbox(bbox);
         if (bbox.getWidth() < bbox.getHeight()) {
-            request.setWidth(2*ComposerOutputFormat.THUMBNAIL_SIZE);
+            request.setWidth(2*THUMBNAIL_SIZE);
         } else {
-            request.setHeight(2*ComposerOutputFormat.THUMBNAIL_SIZE);
+            request.setHeight(2*THUMBNAIL_SIZE);
         }
         
         //Run the getMap request through the WMS Reflector
@@ -229,22 +230,79 @@ public class ThumbnailController extends ApiController {
         FileOutputStream loRes = null;
         FileOutputStream hiRes = null;
         try {
-            loRes = new FileOutputStream(config.createCacheFile(ComposerOutputFormat.thumbnailFilename(layer)).getPath());
-            hiRes = new FileOutputStream(config.createCacheFile(ComposerOutputFormat.thumbnailFilename(layer, true)).getPath());
+            loRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(layer)).getPath());
+            hiRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(layer, true)).getPath());
             
-            loRes.write(ComposerOutputFormat.scaleImage(os.toByteArray(), 0.5, true));
+            loRes.write(scaleImage(os.toByteArray(), 0.5, true));
             //Don't scale, but crop to square
-            hiRes.write(ComposerOutputFormat.scaleImage(os.toByteArray(), 1.0, true));
+            hiRes.write(scaleImage(os.toByteArray(), 1.0, true));
         } finally {
             if (loRes != null) { loRes.close(); }
             if (hiRes != null) { hiRes.close(); }
         }
-        Metadata.thumbnail(layer, ComposerOutputFormat.thumbnailFilename(layer));
+        Metadata.thumbnail(layer, thumbnailFilename(layer));
         
         if (layer instanceof LayerInfo) {
             catalog.save((LayerInfo)layer);
         } else if (layer instanceof LayerGroupInfo) {
             catalog.save((LayerGroupInfo)layer);
         }
+    }
+    /**
+     * Utility method to generate a consistent thumbnail filename
+     * @param layer to create the filename for
+     * @return relative filename
+     */
+    public static final String thumbnailFilename(PublishedInfo layer) {
+        return thumbnailFilename(layer, false);
+    }
+    
+    /**
+     * Utility method to generate a consistent thumbnail filename
+     * @param layer to create the filename for
+     * @param hiRes is this the name of a hi-res thumbnail file?
+     * @return relative filename
+     */
+    public static final String thumbnailFilename(PublishedInfo layer, boolean hiRes) {
+        if (hiRes) {
+            return layer.getId()+EXTENSION_HR;
+        }
+        return layer.getId()+EXTENSION;
+    }
+    
+    public static final byte[] scaleImage(byte[] in, double scale) throws IOException {
+        return scaleImage(in, scale, false);
+    }
+    /**
+     * Utility method for scaling thumbnails. Scales byte[] image by a scale factor.
+     * Optionally crops images to square.
+     * @param in byte[]m containing the input image
+     * @param scale Scale amount
+     * @param square Boolean flag to crop to a square image
+     * @return byte[] contianing the transformed image
+     * @throws IOException
+     */
+    public static final byte[] scaleImage(byte[] in, double scale, boolean square) throws IOException {
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(in));
+        BufferedImage scaled = image;
+        if (scale != 1.0) {
+            AffineTransform scaleTransform = AffineTransform.getScaleInstance(scale, scale);
+            AffineTransformOp bilinearScaleOp = new AffineTransformOp(scaleTransform, AffineTransformOp.TYPE_BILINEAR);
+            scaled =  bilinearScaleOp.filter(image, new BufferedImage(
+                    (int)(image.getWidth()*scale), (int)(image.getHeight()*scale), image.getType()));
+        }
+        if (square) {
+            if (scaled.getHeight() > scaled.getWidth()) {
+                scaled = scaled.getSubimage(0, (scaled.getHeight() - scaled.getWidth())/2, 
+                                            scaled.getWidth(), scaled.getWidth());
+            } else if (scaled.getHeight() < scaled.getWidth()) {
+                scaled = scaled.getSubimage((scaled.getWidth() - scaled.getHeight())/2, 0,
+                                            scaled.getHeight(), scaled.getHeight());
+            }
+        }
+        
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImageIO.write(scaled, TYPE, os);
+        return os.toByteArray();
     }
 }
