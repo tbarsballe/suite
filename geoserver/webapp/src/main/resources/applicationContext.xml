@@ -36,10 +36,13 @@
       <constructor-arg ref="catalog"/>
     </bean>
     
+    <bean id="composerMapResponse" class="com.boundlessgeo.geoserver.wms.map.ComposerMapResponse">
+      <constructor-arg ref="wms" />
+    </bean>
+    
     <bean id="composerMapProducer" class="com.boundlessgeo.geoserver.wms.map.ComposerOutputFormat">
       <constructor-arg ref="wms" />
       <constructor-arg ref="config" />
-      <property name="extension" value="png"/>
     </bean>
     
     <bean class="com.boundlessgeo.geoserver.catalog.ThumbnailInvalidatingCatalogListener">

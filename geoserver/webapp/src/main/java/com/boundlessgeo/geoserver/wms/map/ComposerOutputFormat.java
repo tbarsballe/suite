@@ -11,7 +11,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,10 +25,14 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.LayerGroupInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.PublishedInfo;
+import org.geoserver.platform.ServiceException;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
+import org.geoserver.wms.MapProducerCapabilities;
 import org.geoserver.wms.WMS;
 import org.geoserver.wms.WMSMapContent;
+import org.geoserver.wms.WebMap;
+import org.geoserver.wms.map.AbstractMapOutputFormat;
 import org.geoserver.wms.map.RenderedImageMap;
 import org.geoserver.wms.map.RenderedImageMapOutputFormat;
 import org.geotools.util.logging.Logging;
@@ -48,9 +51,11 @@ import com.boundlessgeo.geoserver.api.controllers.Metadata;
  * but no Layer Group will not cache thumbnails or other metadata, since there is no single target
  * object to store this data.
  */
-public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
+public class ComposerOutputFormat extends AbstractMapOutputFormat {
     
     AppConfiguration config;
+    WMS wms;
+    RenderedImageMapOutputFormat delegate;
     
     static final String FORMAT = "composer";
     static final String TYPE = "png";
@@ -65,8 +70,10 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
     private static final Logger LOGGER = Logging.getLogger(ComposerOutputFormat.class);
     
     public ComposerOutputFormat(WMS wms, AppConfiguration config) {
-        super(MIME_TYPE, new String[] {FORMAT}, wms);
+        super(MIME_TYPE);
+        delegate = new RenderedImageMapOutputFormat(MIME_TYPE, new String[] {FORMAT}, wms);
         this.config = config;
+        this.wms = wms;
     }
     
     //Only include format "composer" so as to not conflict with the regular PNG format
@@ -81,8 +88,14 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
      * Save the request bounds to the map/layer metadata
      */
     @Override
+    public final WebMap produceMap(WMSMapContent mapContent) throws ServiceException,
+            IOException {
+        return produceMap(mapContent, delegate.produceMap(mapContent));
+    }
     public RenderedImageMap produceMap(final WMSMapContent mapContent, final boolean tiled) {
-        RenderedImageMap map = super.produceMap(mapContent, tiled);
+        return produceMap(mapContent, delegate.produceMap(mapContent, tiled));
+    }
+    private RenderedImageMap produceMap(final WMSMapContent mapContent, RenderedImageMap map) {
         final GetMapRequest request = mapContent.getRequest();
         
         Catalog catalog = wms.getCatalog();
@@ -204,5 +217,10 @@ public class ComposerOutputFormat extends RenderedImageMapOutputFormat {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImageIO.write(scaled, TYPE, os);
         return os.toByteArray();
+    }
+    
+    @Override
+    public MapProducerCapabilities getCapabilities(String format) {
+        return delegate.getCapabilities(format);
     }
 }
