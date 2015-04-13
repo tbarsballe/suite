@@ -3,15 +3,12 @@
  */
 package com.boundlessgeo.geoserver.api.controllers;
 
-import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,6 +19,7 @@ import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +35,6 @@ import org.geoserver.catalog.PublishedInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.config.GeoServer;
-import org.geoserver.platform.resource.Files;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
 import org.geoserver.wms.WebMap;
@@ -57,6 +54,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.boundlessgeo.geoserver.AppConfiguration;
+import com.google.common.util.concurrent.Striped;
 import com.vividsolutions.jts.geom.Envelope;
 
 @Controller
@@ -76,6 +74,8 @@ public class ThumbnailController extends ApiController {
     
     @Autowired
     AppConfiguration config;
+    
+    Striped<Semaphore> semaphores = Striped.semaphore(4, 1);
     
     @Autowired
     public ThumbnailController(GeoServer geoServer) {
@@ -180,62 +180,79 @@ public class ThumbnailController extends ApiController {
      */
     protected void createThumbnail(WorkspaceInfo ws, PublishedInfo layer) throws Exception {
         Catalog catalog = geoServer.getCatalog();
-        
-        //Set up getMap request
-        GetMapRequest request = new GetMapRequest();
-        
-        List<MapLayerInfo> layers = new ArrayList<MapLayerInfo>();
-        List<Style> styles = new ArrayList<Style>();
-        Envelope bbox = null;
-        if (layer instanceof LayerInfo) {
-            layers.add(new MapLayerInfo((LayerInfo)layer));
-            styles.add(((LayerInfo)layer).getDefaultStyle().getStyle());
-            bbox = ((LayerInfo)layer).getResource().boundingBox();
-        } else if (layer instanceof LayerGroupInfo) {
-            LayerGroupHelper helper = new LayerGroupHelper((LayerGroupInfo)layer);
-            bbox = ((LayerGroupInfo)layer).getBounds();
+        //Sync against this map/layer
+        Semaphore s = semaphores.get(layer);
+        s.acquire();
+        try {
+            //Set up getMap request
+            GetMapRequest request = new GetMapRequest();
             
-            List<LayerInfo> layerList = helper.allLayersForRendering();
-            for (int i = 0; i  < layerList.size(); i++) {
-                layers.add(new MapLayerInfo(layerList.get(i)));
-            }
-            List<StyleInfo> styleList = helper.allStylesForRendering();
-            for (int i = 0; i  < styleList.size(); i++) {
-                if (styleList.get(i) == null) {
-                    styles.add(layerList.get(i).getDefaultStyle().getStyle());
-                } else {
-                    styles.add(styleList.get(i).getStyle());
+            List<MapLayerInfo> layers = new ArrayList<MapLayerInfo>();
+            List<Style> styles = new ArrayList<Style>();
+            Envelope bbox = null;
+            if (layer instanceof LayerInfo) {
+                layers.add(new MapLayerInfo((LayerInfo)layer));
+                styles.add(((LayerInfo)layer).getDefaultStyle().getStyle());
+                bbox = ((LayerInfo)layer).getResource().boundingBox();
+            } else if (layer instanceof LayerGroupInfo) {
+                LayerGroupHelper helper = new LayerGroupHelper((LayerGroupInfo)layer);
+                bbox = ((LayerGroupInfo)layer).getBounds();
+                
+                List<LayerInfo> layerList = helper.allLayersForRendering();
+                for (int i = 0; i  < layerList.size(); i++) {
+                    layers.add(new MapLayerInfo(layerList.get(i)));
                 }
+                List<StyleInfo> styleList = helper.allStylesForRendering();
+                for (int i = 0; i  < styleList.size(); i++) {
+                    if (styleList.get(i) == null) {
+                        styles.add(layerList.get(i).getDefaultStyle().getStyle());
+                    } else {
+                        styles.add(styleList.get(i).getStyle());
+                    }
+                }
+            } else {
+                throw new RuntimeException("layer must be one of LayerInfo or LayerGroupInfo");
             }
-        } else {
-            throw new RuntimeException("layer must be one of LayerInfo or LayerGroupInfo");
+            request.setLayers(layers);
+            request.setStyles(styles);
+            request.setFormat(MIME_TYPE);
+            
+            //Set the size of the HR thumbnail
+            //Take the smallest bbox dimension as the min dimension. We can then crop the other 
+            //dimension to give a square thumbnail
+            request.setBbox(bbox);
+            if (bbox.getWidth() < bbox.getHeight()) {
+                request.setWidth(2*THUMBNAIL_SIZE);
+            } else {
+                request.setHeight(2*THUMBNAIL_SIZE);
+            }
+            
+            //Run the getMap request through the WMS Reflector
+            WebMap response = wms.reflect(request);
+            //Get the resulting map as a stream
+            RenderedImage image;
+            if (response instanceof RenderedImageMap) {
+                RenderedImageMap map = (RenderedImageMap)response;
+                image = map.getImage();
+            } else {
+                throw new RuntimeException("Unsupported getMap response format:" + response.getClass().getName());
+            }
+            
+            writeThumbnail(layer, image);
+            Metadata.thumbnail(layer, thumbnailFilename(layer));
+            
+            if (layer instanceof LayerInfo) {
+                catalog.save((LayerInfo)layer);
+            } else if (layer instanceof LayerGroupInfo) {
+                catalog.save((LayerGroupInfo)layer);
+            }
+        } finally {
+            s.release();
         }
-        request.setLayers(layers);
-        request.setStyles(styles);
-        request.setFormat(MIME_TYPE);
-        
-        //Set the size of the HR thumbnail
-        //Take the smallest bbox dimension as the min dimension. We can then crop the other 
-        //dimension to give a square thumbnail
-        request.setBbox(bbox);
-        if (bbox.getWidth() < bbox.getHeight()) {
-            request.setWidth(2*THUMBNAIL_SIZE);
-        } else {
-            request.setHeight(2*THUMBNAIL_SIZE);
-        }
-        
-        //Run the getMap request through the WMS Reflector
-        WebMap response = wms.reflect(request);
-        //Get the resulting map as a stream
-        RenderedImage image;
-        if (response instanceof RenderedImageMap) {
-            RenderedImageMap map = (RenderedImageMap)response;
-            image = map.getImage();
-        } else {
-            throw new RuntimeException("Unsupported getMap response format:" + response.getClass().getName());
-        }
-        
-        //Write the thumbnail files
+    }
+    
+    protected void writeThumbnail(PublishedInfo layer, RenderedImage image) throws FileNotFoundException, IOException, InterruptedException {
+      //Write the thumbnail files
         FileOutputStream loRes = null;
         FileOutputStream hiRes = null;
         
@@ -248,6 +265,7 @@ public class ThumbnailController extends ApiController {
             loResRAF = new RandomAccessFile(config.createCacheFile(thumbnailFilename(layer)), "rw");
             hiResRAF = new RandomAccessFile(config.createCacheFile(thumbnailFilename(layer, true)), "rw");
             
+            //Verify the file is not locked by an external process
             loResLock = loResRAF.getChannel().tryLock();
             hiResLock = hiResRAF.getChannel().tryLock();
             
@@ -305,13 +323,6 @@ public class ThumbnailController extends ApiController {
                 }
             }
         }
-        Metadata.thumbnail(layer, thumbnailFilename(layer));
-        
-        if (layer instanceof LayerInfo) {
-            catalog.save((LayerInfo)layer);
-        } else if (layer instanceof LayerGroupInfo) {
-            catalog.save((LayerGroupInfo)layer);
-        }
     }
     /**
      * Utility method to generate a consistent thumbnail filename
@@ -335,7 +346,7 @@ public class ThumbnailController extends ApiController {
         return layer.getId()+EXTENSION;
     }
     
-    public static final RenderedImage scaleImage(RenderedImage src, double scale) throws IOException {
+    public static RenderedImage scaleImage(RenderedImage src, double scale) throws IOException {
         return scaleImage(src, scale, false);
     }
     /**
@@ -347,7 +358,7 @@ public class ThumbnailController extends ApiController {
      * @return RenderedImage containing the transformed image
      * @throws IOException
      */
-    public static final RenderedImage scaleImage(RenderedImage src, double scale, boolean square) throws IOException {
+    public static RenderedImage scaleImage(RenderedImage src, double scale, boolean square) throws IOException {
         BufferedImage image;
         
         if (src instanceof BufferedImage) {
