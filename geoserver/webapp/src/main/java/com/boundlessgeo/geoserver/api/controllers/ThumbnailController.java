@@ -3,10 +3,13 @@
  */
 package com.boundlessgeo.geoserver.api.controllers;
 
+import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,6 +20,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -223,11 +227,10 @@ public class ThumbnailController extends ApiController {
         //Run the getMap request through the WMS Reflector
         WebMap response = wms.reflect(request);
         //Get the resulting map as a stream
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        RenderedImage image;
         if (response instanceof RenderedImageMap) {
             RenderedImageMap map = (RenderedImageMap)response;
-            RenderedImage image = map.getImage();
-            ImageIO.write(image, TYPE, os);
+            image = map.getImage();
         } else {
             throw new RuntimeException("Unsupported getMap response format:" + response.getClass().getName());
         }
@@ -254,9 +257,9 @@ public class ThumbnailController extends ApiController {
             loRes = new FileOutputStream(loResRAF.getFD());
             hiRes = new FileOutputStream(hiResRAF.getFD());
             
-            loRes.write(scaleImage(os.toByteArray(), 0.5, true));
+            ImageIO.write(scaleImage(image, 0.5, true), TYPE, loRes);
             //Don't scale, but crop to square
-            hiRes.write(scaleImage(os.toByteArray(), 1.0, true));
+            ImageIO.write(scaleImage(image, 1.0, true), TYPE, hiRes);
         } finally {
             //Release all locks and close all streams
             if (loResLock != null) {
@@ -332,20 +335,36 @@ public class ThumbnailController extends ApiController {
         return layer.getId()+EXTENSION;
     }
     
-    public static final byte[] scaleImage(byte[] in, double scale) throws IOException {
-        return scaleImage(in, scale, false);
+    public static final RenderedImage scaleImage(RenderedImage src, double scale) throws IOException {
+        return scaleImage(src, scale, false);
     }
     /**
      * Utility method for scaling thumbnails. Scales byte[] image by a scale factor.
      * Optionally crops images to square.
-     * @param in byte[]m containing the input image
+     * @param src RenderedImage containing the input image
      * @param scale Scale amount
      * @param square Boolean flag to crop to a square image
-     * @return byte[] contianing the transformed image
+     * @return RenderedImage containing the transformed image
      * @throws IOException
      */
-    public static final byte[] scaleImage(byte[] in, double scale, boolean square) throws IOException {
-        BufferedImage image = ImageIO.read(new ByteArrayInputStream(in));
+    public static final RenderedImage scaleImage(RenderedImage src, double scale, boolean square) throws IOException {
+        BufferedImage image;
+        
+        if (src instanceof BufferedImage) {
+            image = (BufferedImage)src;
+        } else {
+            ColorModel cm = src.getColorModel();
+            WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(), src.getHeight());
+            Hashtable<String, Object> properties = new Hashtable<String, Object>();
+            String[] keys = src.getPropertyNames();
+            if (keys != null) {
+                for (int i = 0; i < keys.length; i++) {
+                    properties.put(keys[i], src.getProperty(keys[i]));
+                }
+            }
+            image = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), properties);
+            src.copyData(raster); 
+        }
         BufferedImage scaled = image;
         if (scale != 1.0) {
             AffineTransform scaleTransform = AffineTransform.getScaleInstance(scale, scale);
@@ -363,8 +382,6 @@ public class ThumbnailController extends ApiController {
             }
         }
         
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImageIO.write(scaled, TYPE, os);
-        return os.toByteArray();
+        return scaled;
     }
 }
