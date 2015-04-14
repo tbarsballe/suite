@@ -49,11 +49,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,7 +60,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 public class AppIntegrationTest extends GeoServerSystemTestSupport {
@@ -627,56 +622,5 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         
         assertNull(Metadata.thumbnail(layer));
         assertNull(Metadata.thumbnail(map));
-        
-        //Test file lock
-        FileOutputStream out = null;
-        FileLock lock = null;
-        RandomAccessFile raf = null;
-        boolean locked = false;
-        try {
-            ctrl.getMap("sf", "map", true, request);
-            map = catalog.getLayerGroupByName("sf:map");
-            thumbnailPath = Metadata.thumbnail(map);
-            assertNotNull(thumbnailPath);
-            raf = new RandomAccessFile(config.getCacheFile(thumbnailPath),"rw");
-            lock = raf.getChannel().tryLock();
-            assertNotNull(lock);
-            out = new FileOutputStream(raf.getFD());
-            byte[] data = new byte[] {1, 1};
-            out.write(data);
-            assertTrue(config.getCacheFile(thumbnailPath).length() > 0);
-            locked = true;
-            Metadata.invalidateThumbnail(map);
-            catalog.save(map);
-            ctrl.getMap("sf", "map", true, request);
-            //Getting the thumbnail should fail if the file is locked
-            fail();
-        } catch (Exception e) {
-            //Expect to fail only after getting the lock
-            assertTrue(locked);
-            assertTrue(config.getCacheFile(thumbnailPath).length() > 0);
-        } finally {
-            if (lock != null) {
-                try { 
-                    lock.release();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (raf != null) {
-                try {
-                    raf.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 }

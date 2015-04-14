@@ -6,18 +6,13 @@ package com.boundlessgeo.geoserver.api.controllers;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileLock;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -257,58 +252,14 @@ public class ThumbnailController extends ApiController {
         FileOutputStream loRes = null;
         FileOutputStream hiRes = null;
         
-        FileLock loResLock = null;
-        FileLock hiResLock = null;
-        RandomAccessFile loResRAF = null;
-        RandomAccessFile hiResRAF = null;
-        
         try {
-            loResRAF = new RandomAccessFile(config.createCacheFile(thumbnailFilename(layer)), "rw");
-            hiResRAF = new RandomAccessFile(config.createCacheFile(thumbnailFilename(layer, true)), "rw");
-            
-            //Verify the file is not locked by an external process
-            loResLock = loResRAF.getChannel().tryLock();
-            hiResLock = hiResRAF.getChannel().tryLock();
-            
-            if (loResLock == null || hiResLock == null) {
-                throw new IOException ("Thumbnail file(s) not available for writing.");
-            }
-            loRes = new FileOutputStream(loResRAF.getFD());
-            hiRes = new FileOutputStream(hiResRAF.getFD());
+            loRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(layer)));
+            hiRes = new FileOutputStream(config.createCacheFile(thumbnailFilename(layer, true)));
             
             ImageIO.write(scaleImage(image, 0.5, true), TYPE, loRes);
             //Don't scale, but crop to square
             ImageIO.write(scaleImage(image, 1.0, true), TYPE, hiRes);
         } finally {
-            //Release all locks and close all streams
-            if (loResLock != null) {
-                try {
-                    loResLock.release();
-                } catch (IOException e) {
-                    LOG.log(Level.WARNING, "Error releasing lock", e);
-                }
-            }
-            if (hiResLock != null) {
-                try {
-                    hiResLock.release();
-                } catch (IOException e) {
-                    LOG.log(Level.WARNING, "Error releasing lock", e);
-                }
-            }
-            if (loResRAF != null) { 
-                try {
-                    loResRAF.close(); 
-                } catch (IOException e) {
-                    LOG.log(Level.WARNING, "Error closing file", e);
-                }
-            }
-            if (hiResRAF != null) { 
-                try {
-                    hiResRAF.close();
-                } catch (IOException e) {
-                    LOG.log(Level.WARNING, "Error closing file", e);
-                }
-            }
             if (loRes != null) { 
                 try {
                     loRes.close(); 
