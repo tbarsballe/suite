@@ -229,11 +229,12 @@ public class ThumbnailController extends ApiController {
             
             //Run the getMap request through the WMS Reflector
             WebMap response = wms.reflect(request);
-            //Get the resulting map as a stream
-            RenderedImage image;
+            //Get the resulting map image
+            BufferedImage image;
             if (response instanceof RenderedImageMap) {
                 RenderedImageMap map = (RenderedImageMap)response;
-                image = map.getImage();
+                assert(map.getImage() instanceof BufferedImage);
+                image = (BufferedImage)map.getImage();
             } else {
                 throw new RuntimeException("Unsupported getMap response format:" + response.getClass().getName());
             }
@@ -251,7 +252,7 @@ public class ThumbnailController extends ApiController {
         }
     }
     
-    protected void writeThumbnail(PublishedInfo layer, RenderedImage image) throws FileNotFoundException, IOException, InterruptedException {
+    protected void writeThumbnail(PublishedInfo layer, BufferedImage image) throws FileNotFoundException, IOException, InterruptedException {
       //Write the thumbnail files
         FileOutputStream loRes = null;
         FileOutputStream hiRes = null;
@@ -346,8 +347,8 @@ public class ThumbnailController extends ApiController {
         return layer.getId()+EXTENSION;
     }
     
-    public static RenderedImage scaleImage(RenderedImage src, double scale) throws IOException {
-        return scaleImage(src, scale, false);
+    public static RenderedImage scaleImage(BufferedImage image, double scale) throws IOException {
+        return scaleImage(image, scale, false);
     }
     /**
      * Utility method for scaling thumbnails. Scales byte[] image by a scale factor.
@@ -358,24 +359,7 @@ public class ThumbnailController extends ApiController {
      * @return RenderedImage containing the transformed image
      * @throws IOException
      */
-    public static RenderedImage scaleImage(RenderedImage src, double scale, boolean square) throws IOException {
-        BufferedImage image;
-        
-        if (src instanceof BufferedImage) {
-            image = (BufferedImage)src;
-        } else {
-            ColorModel cm = src.getColorModel();
-            WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(), src.getHeight());
-            Hashtable<String, Object> properties = new Hashtable<String, Object>();
-            String[] keys = src.getPropertyNames();
-            if (keys != null) {
-                for (int i = 0; i < keys.length; i++) {
-                    properties.put(keys[i], src.getProperty(keys[i]));
-                }
-            }
-            image = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), properties);
-            src.copyData(raster); 
-        }
+    public static BufferedImage scaleImage(BufferedImage image, double scale, boolean square) throws IOException {
         BufferedImage scaled = image;
         if (scale != 1.0) {
             AffineTransform scaleTransform = AffineTransform.getScaleInstance(scale, scale);
