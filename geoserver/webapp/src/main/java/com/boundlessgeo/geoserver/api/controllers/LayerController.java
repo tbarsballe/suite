@@ -63,10 +63,8 @@ import org.geotools.styling.Style;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.util.Version;
 import org.geotools.util.logging.Logging;
-import org.geotools.ysld.Ysld;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
-import org.opengis.filter.sort.SortBy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -122,10 +120,9 @@ public class LayerController extends ApiController {
             @RequestParam(value="sort", required=false) String sort, 
             @RequestParam(value="filter", required=false) String textFilter, 
             HttpServletRequest req) {
-        JSONObj obj = new JSONObj();
-
+        
         Catalog cat = geoServer.getCatalog();
-
+        
         if ("default".equals(wsName)) {
             WorkspaceInfo def = cat.getDefaultWorkspace();
             if (def != null) {
@@ -136,23 +133,20 @@ public class LayerController extends ApiController {
         if (textFilter != null) {
             filter = Predicates.and(filter, Predicates.fullTextSearch(textFilter));
         }
+        JSONObj obj = new JSONObj();
+        
         Integer total = cat.count(LayerInfo.class, filter);
-
-        SortBy sortBy = parseSort(sort);
-
         obj.put("total", total);
         obj.put("page", page != null ? page : 0);
         obj.put("count", Math.min(total, count != null ? count : total));
-
+        
         JSONArr arr = obj.putArray("layers");
-        try (
-            CloseableIterator<LayerInfo> it = cat.list(LayerInfo.class, filter, offset(page, count), count, sortBy);
-        ) {
+        try ( CloseableIterator<LayerInfo> it = iterator(LayerInfo.class, page, count, sort, filter) ) {
             while (it.hasNext()) {
                 layer(arr.addObject(), it.next(), req);
             }
         }
-
+        
         return obj;
     }
 

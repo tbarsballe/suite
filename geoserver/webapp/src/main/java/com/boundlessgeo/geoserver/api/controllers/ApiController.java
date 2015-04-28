@@ -3,31 +3,41 @@
  */
 package com.boundlessgeo.geoserver.api.controllers;
 
+import java.util.Comparator;
 import java.util.Iterator;
-
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import com.boundlessgeo.geoserver.api.exceptions.BadRequestException;
 import com.boundlessgeo.geoserver.util.RecentObjectCache;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.CatalogInfo;
 import org.geoserver.catalog.LayerGroupInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.catalog.Predicates;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.WorkspaceInfo;
+import org.geoserver.catalog.util.CloseableIterator;
+import org.geoserver.catalog.util.CloseableIteratorAdapter;
 import org.geoserver.config.GeoServer;
 import org.geoserver.config.GeoServerDataDirectory;
+import org.geoserver.ows.util.OwsUtils;
 
 import com.boundlessgeo.geoserver.api.exceptions.NotFoundException;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
+
+import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
+import org.opengis.filter.sort.SortOrder;
 
 /**
  * Base class for api controllers.
@@ -119,6 +129,55 @@ public abstract class ApiController {
         }).iterator();
     }
 
+    protected <T extends CatalogInfo> CloseableIterator<T> iterator(Class<T> info, final Integer page, final Integer count, String sort, Filter filter) {
+        Catalog cat = geoServer.getCatalog();
+        
+        final SortBy sortBy = parseSort(sort);
+        //If we have an invalid property, assume it is in the metadata map
+        if (sortBy != null && OwsUtils.getter( info.getClass(), sortBy.getPropertyName().getPropertyName(), null ) == null) {
+            //Make a comparator for the metadata property
+            Ordering<T> ordering = Ordering.from(new Comparator<T>() {
+                @Override
+                public int compare(T o1, T o2) {
+                    Object v1 = Metadata.map(o1).get(sortBy.getPropertyName().getPropertyName());
+                    Object v2 = Metadata.map(o2).get(sortBy.getPropertyName().getPropertyName());
+                    if (v1 == null) {
+                        if (v2 == null) {
+                            return 0;
+                        } else {
+                            return -1;
+                        }
+                    } else if (v2 == null) {
+                        return 1;
+                    }
+                    Comparable c1 = (Comparable) v1;
+                    Comparable c2 = (Comparable) v2;
+                    return c1.compareTo(c2);
+                }
+            });
+            //Match asc/desc
+            if (SortOrder.DESCENDING.equals(sortBy.getSortOrder())) {
+                ordering = ordering.reverse();
+            }
+            
+            //Extract the values from the catalog, and create a custom iterator
+            try ( CloseableIterator<T> i = (CloseableIterator<T>)cat.list(info, filter) ) {
+                //Apply the ordering
+                Iterable<T> iterable = ordering.sortedCopy(Lists.newArrayList(i));
+                //Apply page and count
+                Integer offset = offset(page, count);
+                if (offset != null && offset.intValue() > 0) {
+                    iterable = Iterables.skip(iterable, offset.intValue());
+                }
+                if (count != null && count.intValue() >= 0) {
+                    iterable = Iterables.limit(iterable, count.intValue());
+                }
+                return new CloseableIteratorAdapter<T>(iterable.iterator());
+            }
+        }
+        return (CloseableIterator<T>) cat.list(info, filter, offset(page, count), count, sortBy);
+    }
+    
     protected SortBy parseSort(String sort) {
         SortBy sortBy = null;
         if (sort != null) {

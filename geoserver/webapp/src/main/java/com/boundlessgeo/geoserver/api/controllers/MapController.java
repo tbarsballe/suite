@@ -5,7 +5,6 @@ package com.boundlessgeo.geoserver.api.controllers;
 
 import static org.geoserver.catalog.Predicates.equal;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,10 +38,8 @@ import org.geoserver.platform.resource.Resource;
 import org.geoserver.platform.resource.Resource.Type;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.util.logging.Logging;
 import org.opengis.filter.Filter;
-import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -400,42 +397,37 @@ public class MapController extends ApiController {
       @RequestParam(value="count", required=false, defaultValue=""+DEFAULT_PAGESIZE) Integer count,
       @RequestParam(value="sort", required=false) String sort,
       @RequestParam(value="filter", required=false) String textFilter) {
-
+        
         Catalog cat = geoServer.getCatalog();
-
+        
         if ("default".equals(wsName)) {
             WorkspaceInfo def = cat.getDefaultWorkspace();
             if (def != null) {
                 wsName = def.getName();
             }
         }
-
         Filter filter = equal("workspace.name", wsName);
         if (textFilter != null) {
             filter = Predicates.and(filter, Predicates.fullTextSearch(textFilter));
         }
-
-        SortBy sortBy = parseSort(sort);
-
-        Integer total = cat.count(LayerGroupInfo.class, filter);
-
         JSONObj obj = new JSONObj();
+        
+        Integer total = cat.count(LayerGroupInfo.class, filter);
         obj.put("total", total);
         obj.put("page", page != null ? page : 0);
         obj.put("count", Math.min(total, count != null ? count : total));
-
+        
         JSONArr arr = obj.putArray("maps");
-        try (
-            CloseableIterator<LayerGroupInfo> it =
-                cat.list(LayerGroupInfo.class, filter, offset(page, count), count, sortBy);
-        ) {
+        try ( CloseableIterator<LayerGroupInfo> it =
+                iterator(LayerGroupInfo.class, page, count, sort, filter); ) {
             while (it.hasNext()) {
                 LayerGroupInfo map = it.next();
                 if( checkMap( map ) ){
-                    map(arr.addObject(), map, wsName);
+                    map(arr.addObject(), map, map.getWorkspace() == null ? "": map.getWorkspace().getName());
                 }
             }
         }
+        
         return obj;
     }
     
