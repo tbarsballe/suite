@@ -526,8 +526,28 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         
         return null;
     }
-    
+    @Test
+    public void testImportInfo() throws IOException {
+        Catalog catalog = getCatalog();
+        StoreInfo targetStore = catalog.getStoreByName("sf", "sf", StoreInfo.class);
+        assertNotNull(targetStore);
+        
+        Importer importer =
+                GeoServerExtensions.bean(Importer.class, applicationContext);
+        ImportController ctrl = new ImportController(getGeoServer(), importer);
 
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setContextPath("/geoserver");
+        request.setRequestURI("/geoserver/hello");
+        request.setMethod("post");
+        
+        JSONObj obj = ctrl.info("sf");
+        
+        assertEquals("sf", obj.str("workspace"));
+        assertNotNull(obj.get("spaceAvailable"));
+        assertEquals(obj.get("spaceAvailable"), obj.get("tmpSpace"));
+    }
+    
     @Test
     public void testIconsUploadDelete() throws Exception {
         Catalog catalog = getCatalog();

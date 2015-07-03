@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.geoserver.catalog.CascadeDeleteVisitor;
@@ -44,6 +45,7 @@ import org.geoserver.ows.util.ResponseUtils;
 import org.geoserver.platform.resource.Resource;
 import org.geoserver.rest.util.RESTUploadExternalPathMapper;
 import org.geoserver.rest.util.RESTUploadPathMapper;
+import org.geoserver.rest.util.RESTUtils;
 import org.geotools.data.DataAccessFactory.Param;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.util.logging.Logging;
@@ -91,6 +93,66 @@ public class ImportController extends ApiController {
         super(geoServer);
         this.importer = importer;
         this.hasher = new Hasher(7);
+    }
+    
+    /**
+     * API endpoint to get space available info when uploading files
+     * 
+     * TODO: If a dedicated file/resource API controller gets created, migrate this method to there
+     * TODO: If/when workspace-specific upload limitations are implemented, update this to be 
+     *       workspace-specific
+     * @return A JSON object containing information about the space available in the workspace
+     * @throws IOException 
+     */
+    @RequestMapping(value = "/{wsName:.+}", method = RequestMethod.GET)
+    public @ResponseBody JSONObj info(@PathVariable String wsName) throws IOException {
+        JSONObj obj = new JSONObj();
+        Catalog catalog = geoServer.getCatalog();
+        WorkspaceInfo ws = findWorkspace(wsName, catalog);
+        
+        if (ws != null) {
+            obj.put("workspace", ws.getName());
+        }
+        //Temp dir
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+        
+        //Global REST upload dir
+        String externalRoot = null;
+        if (externalRoot == null) {
+            externalRoot = RESTUtils.extractMapItem(RESTUtils.loadMapfromWorkSpace(
+                    ws == null ? null : ws.getName(), catalog), RESTUtils.ROOT_KEY);
+        }
+        if (externalRoot == null) {
+            externalRoot = RESTUtils.extractMapItem(RESTUtils.loadMapFromGlobal(), RESTUtils.ROOT_KEY);
+        }
+        if (externalRoot == null) {
+            externalRoot = Paths.toFile(catalog.getResourceLoader().getBaseDirectory(), 
+                    Paths.path("data", ws == null ? null : ws.getName())).getAbsolutePath();
+        }
+        
+        File destDir = new File(externalRoot);
+        
+        long freeSpace = 0;
+        
+        if (tmpDir.exists()) {
+            freeSpace = tmpDir.getUsableSpace();
+            obj.put("tmpDir", tmpDir.getPath());
+            obj.put("tmpSpace", freeSpace);
+        }
+        if (destDir.exists()) {
+            freeSpace = destDir.getUsableSpace();
+            obj.put("uploadDir", destDir.getPath());
+            obj.put("uploadSpace", freeSpace);
+            
+            obj.put("spaceUsed", FileUtils.sizeOfDirectory(destDir));
+        }
+        //In case the destDir is on a different filesystem than the tmpDir, take the min of both
+        if (tmpDir.exists() && destDir.exists()) {
+            freeSpace = Math.min(tmpDir.getUsableSpace(), destDir.getUsableSpace());
+        }
+        obj.put("spaceAvailable", freeSpace);
+        
+        return obj;
     }
 
     /**
