@@ -47,6 +47,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.NameImpl;
 import org.geotools.referencing.CRS;
 import org.geotools.util.NullProgressListener;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opengis.feature.Feature;
@@ -112,6 +113,7 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         removeLayer("cgf", "Lines-map");
     }
     
+    @After
     @Before
     public void removeFiles() {
         removeStore("gs","point");
@@ -119,10 +121,13 @@ public class AppIntegrationTest extends GeoServerSystemTestSupport {
         new File(getCatalog().getResourceLoader().getBaseDirectory(), "data/gs/point/point.prj").delete();
         new File(getCatalog().getResourceLoader().getBaseDirectory(), "data/gs/point/point.shx").delete();
         new File(getCatalog().getResourceLoader().getBaseDirectory(), "data/gs/point/point.dbf").delete();
+        new File(getCatalog().getResourceLoader().getBaseDirectory(), "data/gs/point").delete();
         new File(getCatalog().getResourceLoader().getBaseDirectory(), "uploads/gs/point/point.shp").delete();
         new File(getCatalog().getResourceLoader().getBaseDirectory(), "uploads/gs/point/point.prj").delete();
         new File(getCatalog().getResourceLoader().getBaseDirectory(), "uploads/gs/point/point.shx").delete();
         new File(getCatalog().getResourceLoader().getBaseDirectory(), "uploads/gs/point/point.dbf").delete();
+        new File(getCatalog().getResourceLoader().getBaseDirectory(), "uploads/gs/point").delete();
+
     }
 
     @Test
