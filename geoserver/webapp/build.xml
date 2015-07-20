@@ -58,6 +58,11 @@
       <fileset dir="${data.dir}" excludes="*.zip"/>
     </copy>
 
+    <manifest file="${war.dir}/META-INF/MANIFEST.MF" mode="update">
+      <attribute name="Specification-Version" value="${suite.version}"/>
+      <attribute name="Implementation-Version" value="${suite.version}"/>
+    </manifest>
+
     <delete file="${war.file}"/>
     <if>
         <equals arg1="${suite.build_profile}" arg2="ee"/>
@@ -73,7 +78,7 @@
         </then>
     </if>
 
-    <jar destfile="${war.file}" basedir="${war.dir}" />
+    <jar destfile="${war.file}" basedir="${war.dir}" manifest="${war.dir}/META-INF/MANIFEST.MF"/>
     <antcall target="assemble-artifact">
       <param name="includes" value="*.war"/>
     </antcall>
