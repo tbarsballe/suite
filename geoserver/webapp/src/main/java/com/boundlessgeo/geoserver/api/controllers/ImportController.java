@@ -48,6 +48,7 @@ import org.geoserver.platform.resource.Resource;
 import org.geoserver.rest.util.RESTUploadExternalPathMapper;
 import org.geoserver.rest.util.RESTUploadPathMapper;
 import org.geoserver.rest.util.RESTUtils;
+import org.geoserver.ysld.YsldHandler;
 import org.geotools.data.DataAccessFactory.Param;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.util.logging.Logging;
@@ -94,6 +95,7 @@ public class ImportController extends ApiController {
     public ImportController(GeoServer geoServer, Importer importer) {
         super(geoServer);
         this.importer = importer;
+        this.importer.setStyleHandler(new YsldHandler());
         this.hasher = new Hasher(7);
     }
     
