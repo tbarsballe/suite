@@ -1,0 +1,23 @@
+<project name="wps-builder" default="build">
+  <import file="../build/common.xml"/>
+
+  <target name="build" unless="skip.wps-gui"
+      description="Build WPS GUI">
+    <ant antfile="build.xml" dir="wps-gui" target="war"/>
+  </target>
+  <target name="clean" unless="skip.wps-gui"
+      description="Clean WPS GUI">
+    <ant antfile="build.xml" dir="wps-gui" target="clean"/>
+  </target>
+
+  <target name="assemble">
+    <antcall target="assemble-artifact">
+      <param name="dir" value="wps-gui/build"/>
+      <param name="includes" value="*.war"/>
+    </antcall>
+  </target>
+
+  <target name="publish">
+    <antcall target="publish-artifact"/>
+  </target>
+</project>

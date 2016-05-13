@@ -3,7 +3,7 @@
    <import file="../build/common.xml"/>
 
    <target name="build" description="Build all projects"
-      depends="init, build-gt, build-gwc, build-geoscript-py, build-gs, build-gs-exts, build-wps-gui, build-geomesa">
+      depends="init, build-geoscript-py, build-gs-exts, build-geomesa">
    </target>
 
    <target name="clean"/>
@@ -41,11 +41,5 @@
         <param name="flags" value="-DskipTests -Dgt.version=${gt.version} ${geoscript-py.flags}"/>
         <param name="goals" value="clean install"/>
      </antcall>
-   </target>
-
-   <target name="build-wps-gui" unless="skip.wps-gui"
-      description="Build WPS GUI">
-     <ant antfile="build.xml" dir="wps-gui" target="clean"/>
-     <ant antfile="build.xml" dir="wps-gui" target="war"/>
    </target>
 </project>
