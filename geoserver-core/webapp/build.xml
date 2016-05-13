@@ -5,17 +5,8 @@
   <property name="war.dir" value="target/geoserver"/>
   <property name="war.file" value="${war.dir}.war"/>
 
-  <target name="build" depends="init,build-client,build-server" 
+  <target name="build" depends="init,build-server" 
     description="Builds project">
-  </target>
-
-  <target name="build-client" description="builds client">
-    <if>
-      <available file="composer/build.xml"/>
-      <then>
-        <ant antfile="composer/build.xml" useNativeBasedir="true" />
-      </then>
-    </if>
   </target>
 
   <target name="build-server" description="builds and installs server">
@@ -25,14 +16,7 @@
     </antcall>
   </target>
 
-  <target name="clean" depends="destroy">
-    <if>
-      <available file="composer/build.xml"/>
-      <then>
-        <ant antfile="composer/build.xml" target="clean" useNativeBasedir="true" />
-      </then>
-    </if>
-  </target>
+  <target name="clean" depends="destroy" />
 
   <target name="assemble">
     <available file="${data.dir}/global.xml" property="dataDirIsAvailable"/>
@@ -46,31 +30,14 @@
 
     <delete file="${war.file}"/>
 
-    <ant antfile="composer/build.xml" target="assemble" useNativeBasedir="true" />
-    <antcall target="assemble-artifact">
-      <param name="dir" value="composer/target"/>
-      <param name="name" value="composer"/>
-      <param name="includes" value="*.war"/>
-    </antcall>
-
     <jar destfile="${war.file}" basedir="${war.dir}" />
     <antcall target="assemble-artifact">
       <param name="includes" value="*.war"/>
     </antcall>
-
-    <!--
-    <antcall target="assemble-artifact">
-      <param name="name" value="composer"/>
-      <param name="includes" value="composer/**/*"/>
-    </antcall>
-    -->
   </target>
 
   <target name="publish">
     <antcall target="publish-artifact"/>
-    <antcall target="publish-artifact">
-      <param name="name" value="composer"/>
-    </antcall>
   </target>
 
   <target name="serve" description="Runs GeoServer">
