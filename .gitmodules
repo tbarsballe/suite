@@ -7,11 +7,11 @@
 [submodule "geoserver/geowebcache"]
 	path = geoserver/geowebcache
 	url = git://github.com/boundlessgeo/geowebcache.git
-[submodule "geoserver-exts/geoserver-exts"]
-	path = geoserver-exts/geoserver-exts
+[submodule "geoserver/externals/geoserver-exts"]
+	path = geoserver/externals/geoserver-exts
 	url = git://github.com/boundlessgeo/geoserver-exts.git
-[submodule "geoserver-exts/geoscript/py"]
-	path = geoserver-exts/geoscript/py
+[submodule "geoserver/externals/geoscript/py"]
+	path = geoserver/externals/geoscript/py
 	url = git://github.com/geoscript/geoscript-py.git
 [submodule "geoserver/data_dir/externals/suite-data"]
 	path = geoserver/data_dir/externals/suite-data
@@ -22,7 +22,7 @@
 [submodule "wps-builder/wps-gui"]
 	path = wps-builder/wps-gui
 	url = https://github.com/boundlessgeo/wps-gui.git
-[submodule "geoserver-exts/geomesa/geomesa"]
-	path = geoserver-exts/geomesa/geomesa
+[submodule "geoserver/externals/geomesa/geomesa"]
+	path = geoserver/externals/geomesa/geomesa
 	url = https://github.com/boundlessgeo/geomesa.git
 	branch = opengeo_suite_4.8
