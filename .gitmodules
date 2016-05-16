@@ -1,11 +1,11 @@
-[submodule "geoserver-core/geotools"]
-	path = geoserver-core/geotools
+[submodule "geoserver/geotools"]
+	path = geoserver/geotools
 	url = git://github.com/boundlessgeo/geotools.git
-[submodule "geoserver-core/geoserver"]
-	path = geoserver-core/geoserver
+[submodule "geoserver/geoserver"]
+	path = geoserver/geoserver
 	url = git://github.com/boundlessgeo/geoserver.git
-[submodule "geoserver-core/geowebcache"]
-	path = geoserver-core/geowebcache
+[submodule "geoserver/geowebcache"]
+	path = geoserver/geowebcache
 	url = git://github.com/boundlessgeo/geowebcache.git
 [submodule "geoserver-exts/geoserver-exts"]
 	path = geoserver-exts/geoserver-exts
@@ -13,8 +13,8 @@
 [submodule "geoserver-exts/geoscript/py"]
 	path = geoserver-exts/geoscript/py
 	url = git://github.com/geoscript/geoscript-py.git
-[submodule "geoserver-core/data_dir/externals/suite-data"]
-	path = geoserver-core/data_dir/externals/suite-data
+[submodule "geoserver/data_dir/externals/suite-data"]
+	path = geoserver/data_dir/externals/suite-data
 	url = https://github.com/boundlessgeo/suite-data.git
 [submodule "composer/composer"]
 	path = composer/composer
