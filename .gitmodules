@@ -1,11 +1,11 @@
-[submodule "geoserver/geotools"]
-	path = geoserver/geotools
+[submodule "geoserver/geotools/geotools"]
+	path = geoserver/geotools/geotools
 	url = git://github.com/boundlessgeo/geotools.git
-[submodule "geoserver/geoserver"]
-	path = geoserver/geoserver
+[submodule "geoserver/geoserver/geoserver"]
+	path = geoserver/geoserver/geoserver
 	url = git://github.com/boundlessgeo/geoserver.git
-[submodule "geoserver/geowebcache"]
-	path = geoserver/geowebcache
+[submodule "geoserver/geowebcache/geowebcache"]
+	path = geoserver/geowebcache/geowebcache
 	url = git://github.com/boundlessgeo/geowebcache.git
 [submodule "geoserver/externals/geoserver-exts"]
 	path = geoserver/externals/geoserver-exts
