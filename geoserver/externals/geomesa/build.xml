@@ -2,6 +2,9 @@
 
   <import file="../../../build/common.xml"/>
 
+  <property name="geomesa.dir" value="geomesa"/>
+  <property name="geomesa.geomesa.gs-plugin-dist.dir" value="geoserver-plugin-dist"/>
+
   <target name="clean"/>
 
   <target name="assemble">

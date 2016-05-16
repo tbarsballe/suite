@@ -1,7 +1,0 @@
-<ivy-module version="2.0">
-    <info organisation="com.boundlessgeo.suite" module="${ant.project.name}"/>
-
-    <dependencies>
-      <dependency org="org.marlin" name="marlin" rev="${marlin.version}"/>
-    </dependencies>
-</ivy-module>

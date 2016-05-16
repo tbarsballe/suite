@@ -1,6 +1,7 @@
 <project name="geoserver" default="build">
   <import file="../../build/common.xml"/>
 
+    <property name="gs.flags" value=""/>
     <property name="gs-core.ext.dir" value="geoserver/src/target/release"/>
     <property name="gs-comm.ext.dir" value="geoserver/src/community/target/release"/>
  
@@ -17,7 +18,7 @@
    </exec>
    <antcall target="mvn">
       <param name="dir" value="geoserver/src"/>
-      <param name="flags" value="-DskipTests -DconfigDirectory=${basedir}/geoserver/data -Dbuild.commit.id=${gs.rev} -P ${gs.build_profile} ${gs.flags} -Dgwc.version=${gwc.version}"/>
+      <param name="flags" value="-DskipTests -DconfigDirectory=${basedir}/geoserver/data -Dbuild.commit.id=${gs.rev} -P ${gs.profile} ${gs.flags} -Dgwc.version=${gwc.version}"/>
       <param name="goals" value="clean install assembly:attached"/>
    </antcall>
   </target>

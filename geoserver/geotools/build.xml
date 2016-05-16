@@ -1,6 +1,8 @@
 <project name="geotools" default="build">
   <import file="../../build/common.xml"/>
  
+  <property name="gt.flags" value=""/>
+
   <target name="clean" unless="skip.gt" description="Clean GeoTools">
     <antcall target="mvn">
       <param name="dir" value="geotools"/>
@@ -14,7 +16,7 @@
     </exec>
     <antcall target="mvn">
       <param name="dir" value="geotools"/>
-      <param name="flags" value="-DskipTests -Dall -P ogr,mbtiles,geopkg,mongodb,ysld -Dpostgresql.jdbc.version=${postgresql.jdbc.version} -Dbuild.commit.id=${gt.rev} ${gt.flags}"/>
+      <param name="flags" value="-DskipTests -Dall -P ${gt.profile} -Dpostgresql.jdbc.version=${postgresql.jdbc.version} -Dbuild.commit.id=${gt.rev} ${gt.flags}"/>
       <param name="goals" value="clean install"/>
     </antcall>
   </target>

@@ -3,7 +3,6 @@
   <import file="../../../build/common.xml"/>
 
   <property name="gs-exts.flags" value=""/>
-  <property name="gs-exts.exts" value="cloudwatch,mongodb"/>
   <property name="gs-exts.dir" value="geoserver-exts/target"/>
 
   <target name="clean"/>

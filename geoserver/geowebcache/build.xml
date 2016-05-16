@@ -1,5 +1,7 @@
 <project name="geowebcache" default="build">
   <import file="../../build/common.xml"/>
+
+  <property name="gwc.flags" value=""/>
  
    <target name="clean" unless="skip.gwc" description="Clean GeoWebCache">
     <antcall target="mvn">

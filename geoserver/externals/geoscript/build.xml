@@ -2,6 +2,9 @@
 
    <import file="../../../build/common.xml"/>
 
+   <property name="geoscript-py.dir" value="py"/>
+   <property name="geoscript-py.flags" value=""/>
+
    <target name="clean"/>
 
    <target name="assemble" depends="init-target">
