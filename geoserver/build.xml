@@ -1,17 +1,17 @@
-<project name="geoserver" default="build">
+<project name="geoserver-suite" default="build">
   <import file="../build/common.xml"/>
 
-  <property name="geoserver.modules" value="data_dir,webapp"/>
+  <property name="geoserver.modules" value="geotools,geowebcache,geoserver,data_dir,webapp,externals"/>
 
-  <target name="build" description="Builds project" depends="build-gt,build-gwc,build-gs">
+  <target name="build" description="Builds project">
     <for list="${geoserver.modules}" param="mod">
       <sequential>
-        <ant dir="data_dir" target="build" inheritAll="false"/>
+        <ant dir="@{mod}" target="build" inheritAll="false"/>
       </sequential>
     </for>
   </target>
 
-  <target name="clean" description="Cleans project" depends="clean-gt,clean-gwc,clean-gs">
+  <target name="clean" description="Cleans project">
     <for list="${geoserver.modules}" param="mod">
       <sequential>
         <ant dir="@{mod}" target="clean" inheritAll="false"/>
@@ -34,66 +34,4 @@
       </sequential>
     </for>
   </target>
-
-  <target name="clean-gt" unless="skip.gt" description="Clean GeoTools">
-   <antcall target="mvn">
-      <param name="dir" value="${gt.dir}"/>
-      <param name="goals" value="clean"/>
-    </antcall>
-  </target>
-
-  <target name="clean-gs" unless="skip.gs" description="Clean GeoServer">
-    <antcall target="mvn">
-      <param name="dir" value="${gs.dir}/src"/>
-      <param name="goals" value="clean"/>
-    </antcall>
-  </target>
-
-  <target name="clean-gwc" unless="skip.gwc" description="Clean GeoWebCache">
-    <antcall target="mvn">
-      <param name="dir" value="${gwc.dir}/geowebcache"/>
-      <param name="goals" value="clean"/>
-    </antcall>
-  </target>
-
-  <target name="build-gt" unless="skip.gt" description="Build GeoTools">
-    <exec executable="git" dir="${gt.dir}" failonerror="false" outputproperty="gt.rev">
-     <arg line="rev-parse HEAD"/>
-    </exec>
-    <antcall target="mvn">
-      <param name="dir" value="${gt.dir}"/>
-      <param name="flags" value="-DskipTests -Dall -P ogr,mbtiles,geopkg,mongodb,ysld -Dpostgresql.jdbc.version=${postgresql.jdbc.version} -Dbuild.commit.id=${gt.rev} ${gt.flags}"/>
-      <param name="goals" value="clean install"/>
-    </antcall>
-  </target>
-
- <target name="build-gs" unless="skip.gs" description="Build GeoServer">
-   <exec executable="git" dir="${gs.dir}" failonerror="false" outputproperty="gs.rev">
-     <arg line="rev-parse HEAD"/>
-   </exec>
-   <antcall target="mvn">
-      <param name="dir" value="${gs.dir}/src"/>
-      <param name="flags" value="-DskipTests -DconfigDirectory=${basedir}/${gs.dir}/data -Dbuild.commit.id=${gs.rev} -P importer,ysld ${gs.flags} -Dgwc.version=${gwc.version}"/>
-      <param name="goals" value="clean install assembly:attached"/>
-   </antcall>
- </target>
-
- <target name="build-gwc" unless="skip.gwc" description="Build GeoWebCache">
-   <propertyregex property="gwc.branch" input="${gwc.version}"
-     regexp="(\d\.\d).*" select="\1.x"/>
-   <exec executable="git" dir="${gwc.dir}" failonerror="false" outputproperty="gwc.rev">
-     <arg line="rev-parse HEAD"/>
-   </exec>
-   <antcall target="mvn">
-      <param name="dir" value="${gwc.dir}/geowebcache"/>
-      <param name="flags" value="-DskipTests -Dgt.version=${gt.version} -Dbuild.branch=${gwc.branch} -Dbuild.commit.id=${gwc.rev}"/>
-      <param name="goals" value="clean install"/>
-   </antcall>
-   <antcall target="mvn">
-      <param name="dir" value="${gwc.dir}/geowebcache"/>
-      <param name="flags" value="-DgroupId=org.geowebcache -DartifactId=geowebcache -Dgt.version=${gt.version} -Dversion=${gwc.version} -Dpackaging=war -Dfile=web/target/geowebcache.war ${gwc.flags}"/>
-      <param name="goals" value="install:install-file"/>
-   </antcall>
- </target>
-
 </project>

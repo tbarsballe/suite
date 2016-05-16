@@ -1,0 +1,44 @@
+<project name="geoserver.geomesa" default="build">
+
+  <import file="../../../build/common.xml"/>
+
+  <target name="clean"/>
+
+  <target name="assemble">
+    <delete dir="target/geomesa"/>
+    <mkdir dir="target/geomesa"/>
+    <untar compression="gzip" src="geomesa/geomesa-gs-plugin/geomesa-accumulo-gs-plugin/target/geomesa-accumulo-gs-plugin-1.2.1-install.tar.gz" 
+        dest="target/geomesa" stripAbsolutePathSpec="true">
+        <patternset>
+            <include name="**/*.jar"/>
+        </patternset>
+    </untar>
+    <antcall target="assemble-extension" inheritAll="false">
+      <param name="name" value="geomesa"/>
+    </antcall>
+  </target>
+
+  <target name="publish">
+    <antcall target="publish-ext" inheritAll="false">
+      <param name="name" value="geomesa"/>
+    </antcall>
+  </target>
+
+  <target name="build" unless="skip.geomesa"
+      description="Build geomesa">
+     <antcall target="mvn">
+        <param name="dir" value="${geomesa.dir}"/>
+        <param name="flags" value="-DskipTests"/>
+        <param name="goals" value="clean install"/>
+     </antcall>
+     <antcall target="mvn">
+        <param name="dir" value="${geomesa.gs-plugin-dist.dir}"/>
+        <param name="flags" value="-DskipTests"/>
+        <param name="goals" value="clean install"/>
+     </antcall>
+  </target>
+
+  <target name="unpack-geomesa-ext">
+      
+  </target>
+</project>

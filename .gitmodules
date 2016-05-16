@@ -7,8 +7,8 @@
 [submodule "geoserver/geowebcache/geowebcache"]
 	path = geoserver/geowebcache/geowebcache
 	url = git://github.com/boundlessgeo/geowebcache.git
-[submodule "geoserver/externals/geoserver-exts"]
-	path = geoserver/externals/geoserver-exts
+[submodule "geoserver/externals/geoserver-exts/geoserver-exts"]
+	path = geoserver/externals/geoserver-exts/geoserver-exts
 	url = git://github.com/boundlessgeo/geoserver-exts.git
 [submodule "geoserver/externals/geoscript/py"]
 	path = geoserver/externals/geoscript/py

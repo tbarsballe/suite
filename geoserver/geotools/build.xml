@@ -1,0 +1,26 @@
+<project name="geotools" default="build">
+  <import file="../../build/common.xml"/>
+ 
+  <target name="clean" unless="skip.gt" description="Clean GeoTools">
+    <antcall target="mvn">
+      <param name="dir" value="geotools"/>
+      <param name="goals" value="clean"/>
+    </antcall>
+  </target>
+
+  <target name="build" unless="skip.gt" description="Build GeoTools">
+    <exec executable="git" dir="geotools" failonerror="false" outputproperty="gt.rev">
+     <arg line="rev-parse HEAD"/>
+    </exec>
+    <antcall target="mvn">
+      <param name="dir" value="geotools"/>
+      <param name="flags" value="-DskipTests -Dall -P ogr,mbtiles,geopkg,mongodb,ysld -Dpostgresql.jdbc.version=${postgresql.jdbc.version} -Dbuild.commit.id=${gt.rev} ${gt.flags}"/>
+      <param name="goals" value="clean install"/>
+    </antcall>
+  </target>
+
+  <target name="assemble" unless="skip.gt" />
+
+  <target name="publish" unless="skip.gt" />
+
+</project>

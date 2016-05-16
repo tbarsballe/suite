@@ -1,0 +1,118 @@
+<project name="geoserver" default="build">
+  <import file="../../build/common.xml"/>
+
+    <property name="gs-core.ext.dir" value="geoserver/src/target/release"/>
+    <property name="gs-comm.ext.dir" value="geoserver/src/community/target/release"/>
+ 
+   <target name="clean" unless="skip.gs" description="Clean GeoServer">
+    <antcall target="mvn">
+      <param name="dir" value="geoserver/src"/>
+      <param name="goals" value="clean"/>
+    </antcall>
+  </target>
+
+  <target name="build" unless="skip.gs" description="Build GeoServer">
+   <exec executable="git" dir="geoserver" failonerror="false" outputproperty="gs.rev">
+     <arg line="rev-parse HEAD"/>
+   </exec>
+   <antcall target="mvn">
+      <param name="dir" value="geoserver/src"/>
+      <param name="flags" value="-DskipTests -DconfigDirectory=${basedir}/geoserver/data -Dbuild.commit.id=${gs.rev} -P ${gs.build_profile} ${gs.flags} -Dgwc.version=${gwc.version}"/>
+      <param name="goals" value="clean install assembly:attached"/>
+   </antcall>
+  </target>
+
+  <target name="assemble" unless="skip.gs" description="Stage GeoServer artifacts">
+    <!-- extract artifacts to target, excluding core jars -->
+    <for list="${gs.ext_core}" param="ext">
+        <antcall target="unpack-core-ext" inheritAll="false">
+          <param name="ext" value="@{ext}"/>
+        </antcall>
+    </for>
+    <for list="${gs.ext_comm}" param="ext">
+        <antcall target="unpack-comm-ext" inheritAll="false">
+          <param name="ext" value="@{ext}"/>
+        </antcall>
+    </for>
+    <!-- modify artifacts -->
+
+    <!-- copy the ogr jars into the gdal ext directory-->
+    <copy todir="target/gdal" flatten="true">
+        <fileset dir="../externals/geotools/modules/plugin/ogr">
+            <include name="**/gt-ogr-core-*.jar"/>
+            <include name="**/gt-ogr-jni-*.jar"/>
+            <exclude name="**/*-sources.jar"/>
+            <exclude name="**/*-tests.jar"/>
+        </fileset>
+    </copy>
+
+    <!-- add back when netcdf-out C-lib is supported; combines both netcdf exts
+    <move todir="target/netcdf" flatten="true">
+      <fileset dir="target/netcdf-out">
+        <include name="gs-netcdf-out*.jar"/>
+      </fileset>
+    </move>
+
+    <!-- assemble final artifacts -->
+    <for list="${gs.ext_core}" param="ext">
+        <antcall target="assemble-ext" inheritAll="false">
+          <param name="name" value="@{ext}"/>
+        </antcall>
+    </for>
+    <for list="${gs.ext_comm}" param="ext">
+        <antcall target="assemble-extension" inheritAll="false">
+          <param name="name" value="@{ext}"/>
+        </antcall>
+    </for>
+  </target>
+
+  <target name="publish" unless="skip.gs" >
+    <for list="${gs.ext_core}" param="ext">
+        <antcall target="publish-ext" inheritAll="false">
+          <param name="name" value="@{ext}"/>
+        </antcall>
+    </for>
+    <for list="${gs.ext_comm}" param="ext">
+        <antcall target="publish-ext" inheritAll="false">
+          <param name="name" value="@{ext}"/>
+        </antcall>
+    </for>
+  </target>
+
+  <target name="unpack-core-ext">
+    <property name="extdir" value="${gs-core.ext.dir}"/>
+    <delete dir="target/${ext}"/>
+    <mkdir dir="target/${ext}"/>
+    <unzip src="${extdir}/geoserver-${gs.version}-${ext}-plugin.zip"
+        dest="target/${ext}">
+      <patternset>
+        <exclude name="*.txt"/>
+        <exclude name="*.TXT"/>
+        <exclude name="*.ini"/>
+        <exclude name="imageio-ext-geocore-*.jar"/>
+        <exclude name="gt-geopkg-??-SNAPSHOT.jar"/>
+        <exclude name="sqlite-jdbc-*.jar"/>
+        <exclude name="gt-geojson-*.jar"/>
+        <exclude name="gt-jdbc-h2-*.jar"/>
+        <exclude name="gt-process-??-SNAPSHOT.jar"/>
+        <exclude name="gt-process-feature-*.jar"/>
+        <exclude name="gt-process-raster-*.jar"/>
+        <exclude name="gt-xsd-kml-*.jar"/>
+        <exclude name="json-simple-*.jar"/>
+        <exclude name="imageio-ext-imagereadmt-*.jar"/>
+        <exclude name="gt-process-geometry-*.jar"/>
+        <!-- moved to main geoserver package to prevent extension conflicts -->
+        <exclude name="gt-app-schema-resolver-*.jar"/>
+        <exclude name="gt-complex-*.jar"/>
+      </patternset>
+    </unzip>
+  </target>
+
+  <target name="unpack-comm-ext">
+    <antcall target="unpack-core-ext">
+      <param name="ext" value="${ext}"/>
+      <param name="extdir" value="${gs-comm.ext.dir}"/>
+    </antcall>
+  </target>
+
+</project>

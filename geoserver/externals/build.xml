@@ -1,45 +1,37 @@
 <project name="geoserver.externals" default="build">
 
-   <import file="../build/common.xml"/>
+   <import file="../../build/common.xml"/>
+<property name="geoserver.externals.modules" value="geoserver-exts,geoscript,geomesa"/>
 
-   <target name="build" description="Build all projects"
-      depends="init, build-geoscript-py, build-gs-exts, build-geomesa">
-   </target>
+  <target name="build" description="Builds project">
+    <for list="${geoserver.externals.modules}" param="mod">
+      <sequential>
+        <ant dir="@{mod}" target="build" inheritAll="false"/>
+      </sequential>
+    </for>
+  </target>
 
-   <target name="clean"/>
+  <target name="clean" description="Cleans project">
+    <for list="${geoserver.externals.modules}" param="mod">
+      <sequential>
+        <ant dir="@{mod}" target="clean" inheritAll="false"/>
+      </sequential>
+    </for>
+  </target>
 
-   <target name="assemble"/>
+  <target name="assemble" description="Assembles project artifacts">
+    <for list="${geoserver.externals.modules}" param="mod">
+      <sequential>
+        <ant dir="@{mod}" target="assemble" inheritAll="false"/>
+      </sequential>
+    </for>
+  </target>
 
-   <target name="publish"/>
-
-   <target name="build-gs-exts" unless="skip.gs-exts" description="Build GeoServer Exts">
-     <antcall target="mvn">
-        <param name="dir" value="${gs-exts.dir}"/>
-        <param name="flags" value="-DskipTests -Dgs.version=${gs.version} -Dgt.version=${gt.version} ${gs-exts.flags}"/>
-        <param name="goals" value="clean install assembly:attached"/>
-     </antcall>
-   </target>
-
-   <target name="build-geomesa" unless="skip.geomesa"
-      description="Build geomesa">
-     <antcall target="mvn">
-        <param name="dir" value="${geomesa.dir}"/>
-        <param name="flags" value="-DskipTests"/>
-        <param name="goals" value="clean install"/>
-     </antcall>
-     <antcall target="mvn">
-        <param name="dir" value="${geomesa.gs-plugin-dist.dir}"/>
-        <param name="flags" value="-DskipTests"/>
-        <param name="goals" value="clean install"/>
-     </antcall>
-   </target>
-
-   <target name="build-geoscript-py" unless="skip.geoscript-py"
-      description="Build GeoScript PY">
-     <antcall target="mvn">
-        <param name="dir" value="${geoscript-py.dir}"/>
-        <param name="flags" value="-DskipTests -Dgt.version=${gt.version} ${geoscript-py.flags}"/>
-        <param name="goals" value="clean install"/>
-     </antcall>
-   </target>
+  <target name="publish" description="Publishes project artifacts">
+    <for list="${geoserver.externals.modules}" param="mod">
+      <sequential>
+        <ant dir="@{mod}" target="publish" inheritAll="false"/>
+      </sequential>
+    </for>
+  </target>
 </project>

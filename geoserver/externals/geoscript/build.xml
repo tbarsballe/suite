@@ -1,0 +1,34 @@
+<project name="geoserver.geoscript-py" default="build">
+
+   <import file="../../../build/common.xml"/>
+
+   <target name="clean"/>
+
+   <target name="assemble" depends="init-target">
+
+    <copy todir="target/geoscript-py" flatten="true">
+        <fileset dir="${geoscript-py.dir}/target">
+            <include name="geoscript-py-*.jar"/>
+        </fileset>
+    </copy>
+    <!-- other jars? -->
+    <antcall target="assemble-extension" inheritAll="false">
+      <param name="name" value="geoscript-py"/>
+    </antcall>
+  </target>
+
+  <target name="publish">
+    <antcall target="publish-ext" inheritAll="false">
+      <param name="name" value="geoscript-py"/>
+    </antcall>
+  </target>
+
+  <target name="build" unless="skip.geoscript-py"
+      description="Build GeoScript PY">
+    <antcall target="mvn">
+      <param name="dir" value="${geoscript-py.dir}"/>
+      <param name="flags" value="-DskipTests -Dgt.version=${gt.version} ${geoscript-py.flags}"/>
+      <param name="goals" value="clean install"/>
+    </antcall>
+  </target>
+</project>

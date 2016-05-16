@@ -189,6 +189,23 @@ Common build targets.
     </target>
 
     <!--
+    Assembles a geoserver extension artifact.
+
+    @param name The artifact name, default is name of project.
+    @param dir The directory from which files is relative to, default is target.
+    -->
+    <target name="assemble-extension" depends="init-target">
+      <property name="dir" value="target"/>
+      <property name="name" value="${ant.project.name}"/>
+
+      <property name="ext_file" value="target/suite-geoserver-${name}-${suite.build_rev}.zip"/>
+
+      <zip destfile="${ext_file}">
+        <fileset dir="${dir}/${name}"/>
+      </zip>
+    </target>
+
+    <!--
     Publishes a build artifact.
 
     @param name The artifact name, default is name of project.
@@ -234,6 +251,29 @@ Common build targets.
             </delete>
           </then>
         </if>
+    </target>
+
+    <!--
+    Publishes a geoserver extension.
+
+    @param name The artifact name, default is name of project.
+    @param includes The pattern determine files to be included in the archive, default is **/*.
+    @param excludes The pattern determine files to be excluded from the archive.
+    @param dir The directory from which files is relative to, default is target.
+    -->
+    <target name="publish-extension" depends="init-git">
+        <property name="name" value="${ant.project.name}"/>
+        <property name="path" value="geoserver-exts"/>
+
+        <property name="extensions_dir" 
+          value="${suite.build_root}/${suite.build_branch}/${suite.build_cat}/${path}"/>
+
+        <property name="artifact_file"
+            value="suite-geoserver-${name}-${suite.build_rev}.zip"/>
+
+        <antcall target="publish-artifact">
+          <param name="artifact_dir" value="${extensions_dir}/"/>
+        </antcall>
     </target>
 
   <!-- 
