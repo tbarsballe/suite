@@ -194,7 +194,7 @@ Common build targets.
     @param name The artifact name, default is name of project.
     @param dir The directory from which files is relative to, default is target.
     -->
-    <target name="assemble-extension" depends="init-target">
+    <target name="assemble-extension" depends="init-target,init-git">
       <property name="dir" value="target"/>
       <property name="name" value="${ant.project.name}"/>
 
@@ -221,11 +221,13 @@ Common build targets.
           value="${suite.build_root}/${suite.build_branch}/${suite.build_cat}/${path}"/>
         <property name="artifact_file" 
             value="suite-${name}-${suite.build_rev}.zip"/>
+        <property name="artifact_link" 
+            value="suite-${name}-${suite.build_name}.zip"/>
 
         <mkdir dir="${artifact_dir}"/>
         <copy file="target/${artifact_file}" todir="${artifact_dir}" overwrite="true"/>  
         <symlink resource="${artifact_dir}/${artifact_file}" 
-          link="${artifact_dir}/suite-${name}-${suite.build_name}.zip" 
+          link="${artifact_dir}/${artifact_link}" 
           overwrite="true" failonerror="false"/>
 
         <!--
@@ -263,16 +265,14 @@ Common build targets.
     -->
     <target name="publish-extension" depends="init-git">
         <property name="name" value="${ant.project.name}"/>
-        <property name="path" value="geoserver-exts"/>
+        <property name="path" value="geoserver-extensions"/>
 
         <property name="extensions_dir" 
           value="${suite.build_root}/${suite.build_branch}/${suite.build_cat}/${path}"/>
 
-        <property name="artifact_file"
-            value="suite-geoserver-${name}-${suite.build_rev}.zip"/>
-
         <antcall target="publish-artifact">
           <param name="artifact_dir" value="${extensions_dir}/"/>
+          <param name="name" value="geoserver-${name}"/>
         </antcall>
     </target>
 

@@ -5,10 +5,15 @@
    <property name="geoscript-py.dir" value="py"/>
    <property name="geoscript-py.flags" value=""/>
 
-   <target name="clean"/>
+   <target name="clean" unless="skip.geoscript-py">
+    <delete dir="target"/>
+    <antcall target="mvn">
+      <param name="dir" value="${geoscript-py.dir}"/>
+      <param name="goals" value="clean"/>
+    </antcall>
+  </target>
 
-   <target name="assemble" depends="init-target">
-
+  <target name="assemble" depends="init-target"  unless="skip.geoscript-py">
     <copy todir="target/geoscript-py" flatten="true">
         <fileset dir="${geoscript-py.dir}/target">
             <include name="geoscript-py-*.jar"/>
@@ -20,18 +25,17 @@
     </antcall>
   </target>
 
-  <target name="publish">
-    <antcall target="publish-ext" inheritAll="false">
+  <target name="publish"  unless="skip.geoscript-py">
+    <antcall target="publish-extension" inheritAll="false">
       <param name="name" value="geoscript-py"/>
     </antcall>
   </target>
 
-  <target name="build" unless="skip.geoscript-py"
-      description="Build GeoScript PY">
+  <target name="build" unless="skip.geoscript-py" description="Build GeoScript PY">
     <antcall target="mvn">
       <param name="dir" value="${geoscript-py.dir}"/>
       <param name="flags" value="-DskipTests -Dgt.version=${gt.version} ${geoscript-py.flags}"/>
-      <param name="goals" value="clean install"/>
+      <param name="goals" value="install"/>
     </antcall>
   </target>
 </project>

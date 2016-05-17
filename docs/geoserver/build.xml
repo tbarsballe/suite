@@ -12,7 +12,7 @@
     <target name="init-sources">
         <mkdir dir="src"/>
         <copy todir="src">
-          <fileset dir="../../geoserver/externals/geoserver/doc/en/user/source" includes="**/*"/>
+          <fileset dir="../../geoserver/geoserver/geoserver/doc/en/user/source" includes="**/*"/>
         </copy>
         <copy file="conf.py" tofile="src/conf.py" overwrite="true"/>
     </target>

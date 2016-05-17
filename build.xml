@@ -1,7 +1,7 @@
 <project name="suite" default="build">
   <import file="build/common.xml"/>
 
-  <property name="modules.list" value="geoserver,geowebcache,dashboard,docs"/>
+  <property name="modules.list" value="geoserver,geowebcache,composer,wps-builder,dashboard,docs"/>
 
   <target name="build" description="Builds project">
     <for list="${modules.list}" param="mod">

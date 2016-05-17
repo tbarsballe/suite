@@ -3,9 +3,15 @@
   <import file="../../../build/common.xml"/>
 
   <property name="gs-exts.flags" value=""/>
-  <property name="gs-exts.dir" value="geoserver-exts/target"/>
+  <property name="gs-exts.dir" value="geoserver-exts"/>
 
-  <target name="clean"/>
+  <target name="clean" unless="skip.gs-exts">
+    <delete dir="target"/>
+    <antcall target="mvn">
+      <param name="dir" value="${gs-exts.dir}"/>
+      <param name="goals" value="clean"/>
+    </antcall>
+  </target>
 
   <target name="assemble" unless="skip.gs-exts">
     <for list="${gs-exts.exts}" param="ext">
@@ -21,25 +27,21 @@
   </target>
 
   <target name="publish" unless="skip.gs-exts">
-    <for list="${gs-exts.exts}" param="ext">
-        <antcall target="publish-ext" inheritAll="false">
-          <param name="name" value="@{ext}"/>
-        </antcall>
-    </for>
+    <foreach list="${gs-exts.exts}" param="name" target="publish-extension"/>
   </target>
 
    <target name="build" unless="skip.gs-exts" description="Build GeoServer Exts">
      <antcall target="mvn">
         <param name="dir" value="${gs-exts.dir}"/>
         <param name="flags" value="-DskipTests -Dgs.version=${gs.version} -Dgt.version=${gt.version} ${gs-exts.flags}"/>
-        <param name="goals" value="clean install assembly:attached"/>
+        <param name="goals" value="install assembly:attached"/>
      </antcall>
    </target>
 
    <target name="unpack-ext">
       <delete dir="target/${ext}"/>
       <mkdir dir="target/${ext}"/>
-      <unzip src="${gs-exts.dir}/geoserver-exts-${gs.version}-${ext}.zip"
+      <unzip src="${gs-exts.dir}/target/geoserver-exts-${gs.version}-${ext}.zip"
           dest="target/${ext}"/>
   </target>
 </project>

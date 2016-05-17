@@ -133,6 +133,8 @@ Or to build everything:
 
     ant all
 
+The highest level build files simply delegate to the lower level build files. This means that performing a top level build and performing a build for a specific module will result in the same artifacts being produced for that module.
+
 The [build](build) directory contains common build files used by modules.
 
  * [common.xml](build/common.xml) - Common ant targets used by module 
@@ -156,18 +158,19 @@ There are two ways to override build properties:
 1. Creating a file named `local.properties` either at the global level or at the module level. The global `local.properties` is located in the [build](build) directory next to 
 `build.properties`. Module specific `local.properties` files are located next to the module `build.xml` file. Naturally the module specific local properties file overrides properties from its global counterpart. 
 
-Using any combination of the above method it should never be necessary to modify the `build.properties` file directly. 
+Using any combination of the above method it should never be necessary to modify the `build.properties` file directly.
+
+The build.properties file *should* be modified when development begins on a new suite version, in order to update the appropriate version numbers and geosserver extensions.
 
 ## Modules
 
 The suite repository is composed of the following modules:
 
-* [apps](apps/README.md)
+* [composer](composer/README.md)
 * [dashboard](dashboard/README.md)
 * [docs](docs/README.md)
 * [geoserver](geoserver/README.md)
 * [geowebcache](geowebcache/README.md)
-* [jetty](jetty/README.md)
-* [recipes](recipes/README.md)
+* [wps-builder](wpsbuilder/README.md)
 
 Consult the module README files for module specific information. 

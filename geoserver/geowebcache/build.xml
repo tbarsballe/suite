@@ -2,10 +2,12 @@
   <import file="../../build/common.xml"/>
 
   <property name="gwc.flags" value=""/>
+  <property name="gwc.dir" value="geowebcache"/>
  
    <target name="clean" unless="skip.gwc" description="Clean GeoWebCache">
+    <delete dir="target"/>
     <antcall target="mvn">
-      <param name="dir" value="geowebcache/geowebcache"/>
+      <param name="dir" value="${gwc.dir}/geowebcache"/>
       <param name="goals" value="clean"/>
     </antcall>
   </target>
@@ -13,16 +15,16 @@
   <target name="build" unless="skip.gwc" description="Build GeoWebCache">
    <propertyregex property="gwc.branch" input="${gwc.version}"
      regexp="(\d\.\d).*" select="\1.x"/>
-   <exec executable="git" dir="geowebcache" failonerror="false" outputproperty="gwc.rev">
+   <exec executable="git" dir="${gwc.dir}" failonerror="false" outputproperty="gwc.rev">
      <arg line="rev-parse HEAD"/>
    </exec>
    <antcall target="mvn">
       <param name="dir" value="${gwc.dir}/geowebcache"/>
       <param name="flags" value="-DskipTests -Dgt.version=${gt.version} -Dbuild.branch=${gwc.branch} -Dbuild.commit.id=${gwc.rev}"/>
-      <param name="goals" value="clean install"/>
+      <param name="goals" value="install"/>
    </antcall>
    <antcall target="mvn">
-      <param name="dir" value="geowebcache/geowebcache"/>
+      <param name="dir" value="${gwc.dir}/geowebcache"/>
       <param name="flags" value="-DgroupId=org.geowebcache -DartifactId=geowebcache -Dgt.version=${gt.version} -Dversion=${gwc.version} -Dpackaging=war -Dfile=web/target/geowebcache.war ${gwc.flags}"/>
       <param name="goals" value="install:install-file"/>
    </antcall>

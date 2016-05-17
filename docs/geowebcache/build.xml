@@ -11,7 +11,7 @@
 
     <target name="init-sources">
         <copy todir="src">
-          <fileset dir="../../geoserver/externals/geowebcache/documentation/en/user/source" includes="**/*"/>
+          <fileset dir="../../geoserver/geowebcache/geowebcache/documentation/en/user/source" includes="**/*"/>
         </copy>
         <!-- remove this copy when gwc #153 is fixed -->
         <copy file="conf.py" todir="src" overwrite="true"/>

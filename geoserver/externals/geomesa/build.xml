@@ -5,9 +5,19 @@
   <property name="geomesa.dir" value="geomesa"/>
   <property name="geomesa.geomesa.gs-plugin-dist.dir" value="geoserver-plugin-dist"/>
 
-  <target name="clean"/>
+  <target name="clean" unless="skip.geomesa">
+    <delete dir="target"/>
+    <antcall target="mvn">
+      <param name="dir" value="${geomesa.dir}"/>
+      <param name="goals" value="clean"/>
+    </antcall>
+    <antcall target="mvn">
+      <param name="dir" value="${geomesa.gs-plugin-dist.dir}"/>
+      <param name="goals" value="clean"/>
+     </antcall>
+  </target>
 
-  <target name="assemble">
+  <target name="assemble" unless="skip.geomesa">
     <delete dir="target/geomesa"/>
     <mkdir dir="target/geomesa"/>
     <untar compression="gzip" src="geomesa/geomesa-gs-plugin/geomesa-accumulo-gs-plugin/target/geomesa-accumulo-gs-plugin-1.2.1-install.tar.gz" 
@@ -21,8 +31,8 @@
     </antcall>
   </target>
 
-  <target name="publish">
-    <antcall target="publish-ext" inheritAll="false">
+  <target name="publish" unless="skip.geomesa">
+    <antcall target="publish-extension" inheritAll="false">
       <param name="name" value="geomesa"/>
     </antcall>
   </target>
@@ -32,16 +42,12 @@
      <antcall target="mvn">
         <param name="dir" value="${geomesa.dir}"/>
         <param name="flags" value="-DskipTests"/>
-        <param name="goals" value="clean install"/>
+        <param name="goals" value="install"/>
      </antcall>
      <antcall target="mvn">
         <param name="dir" value="${geomesa.gs-plugin-dist.dir}"/>
         <param name="flags" value="-DskipTests"/>
-        <param name="goals" value="clean install"/>
+        <param name="goals" value="install"/>
      </antcall>
-  </target>
-
-  <target name="unpack-geomesa-ext">
-      
   </target>
 </project>
