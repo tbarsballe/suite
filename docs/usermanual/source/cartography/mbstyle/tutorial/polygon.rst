@@ -1,9 +1,9 @@
-.. _cartography.ysld.tutorial.polygon:
+.. _cartography.mbstyle.tutorial.polygon:
 
 Styling a polygon layer
 =======================
 
-The Countries layer is a polygon layer, and therefore we use a `fill layer <https://www.mapbox.com/mapbox-gl-js/style-spec/#layers-fill>`_ to display it. 
+The countries layer is a polygon layer, and therefore we use a `fill layer <https://www.mapbox.com/mapbox-gl-js/style-spec/#layers-fill>`_ to display it. 
 
 Creating a new style
 --------------------
@@ -14,7 +14,7 @@ Creating a new style
 
 .. TODO: If generate works, add instructions for generating a new MBStyle, else provide one we can paste.
 
-   Click the ``Apply`` button, then navigate to the ``Layer Preview`` tab and select the ``polygon`` layer to previw the style.
+   Click the ``Apply`` button, then navigate to the ``Layer Preview`` tab and select the ``countries`` layer to preview the style.
 
    .. figure:: ../../ysld/tutorial/img/poly_default.png
 
@@ -71,9 +71,9 @@ Sources
 
 MBStyles have a `sources <https://www.mapbox.com/mapbox-gl-js/style-spec/#root-sources>`_ element, which describes the data to be rendered by the style. This is used by client applications to retrieve vector data.
 
-.. note:: GeoServer currently ignores the sources element, but supports it for compatibility with client-side styles.
+.. note:: GeoServer currently ignores the sources element, but supports it for compatibility with client-side styles. As such, the sources element will not be used for this tutorial
 
-#. Add a sources element for the countries layer:
+#. A sources element for the countries layer would look like this:
 
    .. code-block:: json
       :emphasize-lines: 4-8, 14-15
