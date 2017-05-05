@@ -1,0 +1,71 @@
+{
+    "version": 8,
+    "name": "roads",
+    "layers": [
+        {
+            "id": "big",
+            "filter": ["<", "scalerank", 4],
+            "maxzoom": 6,
+            "type": "line",
+            "paint": {
+                "line-color": "#333333",
+                "line-width": 1
+            }
+        },
+        {
+            "id": "medium",
+            "filter": ["all", ["<", "scalerank", 8], ["!=", "expressway", 1], ["!=", "featurecla", "Ferry"]],
+            "minzoom": 6,
+            "maxzoom": 8,
+            "type": "line",
+            "paint": {
+                "line-color": "#333333",
+                "line-width": 1
+            }
+        },
+        {
+            "id": "ferry",
+            "filter": ["==", "featurecla", "Ferry"],
+            "minzoom": 6,
+            "type": "line",
+            "paint": {
+                "line-color": "#00CCFF",
+                "line-width": 2,
+                "line-dasharray": [4, 6]
+            }
+        },
+        {
+            "id": "expressway",
+            "filter": ["==", "expressway", 1],
+            "minzoom": 6,
+            "type": "line",
+            "paint": {
+                "line-color": "#000000",
+                "line-width": 6,
+                "line-gap-width": 4,
+                "line-cap": "round"
+            }
+        },
+        {
+            "id": "inner",
+            "filter": ["==", "expressway", 1],
+            "minzoom": 6,
+            "type": "line",
+            "paint": {
+                "line-color": "#FFCC00",
+                "line-width": 4,
+                "line-cap": "round"
+            }
+        },
+        {
+            "id": "small",
+            "filter": ["all", ["!=", "expressway", 1], ["!=", "featurecla", "Ferry"]],
+            "minzoom": 8,
+            "type": "line",
+            "paint": {
+                "line-color": "#777777",
+                "line-width": 0.5
+            }
+        }
+    ]
+}
