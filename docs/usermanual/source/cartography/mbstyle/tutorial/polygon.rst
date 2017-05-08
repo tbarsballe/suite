@@ -8,9 +8,11 @@ The countries layer is a polygon layer, and therefore we use a `fill layer <http
 Creating a new style
 --------------------
 
-#. Navigate to the GeoServer Styles list. CLick the ``Add a new style`` option.
+#. Navigate to the GeoServer Styles list. Click the ``Add a new style`` option.
 
-   Name this new style ``mbpolygon`` and set the format to ``MBStyle``. 
+   Name this new style ``mbpolygon`` and set the format to ``MBStyle``.
+
+   Under the ``Generate a default style`` option, select ``Point`` and click the ``Generate`` link to create a default polygon style. 
 
 .. TODO: If generate works, add instructions for generating a new MBStyle, else provide one we can paste.
 

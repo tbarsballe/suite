@@ -8,9 +8,11 @@ The roads layer is a line layer, and therefore we use a `line layer <https://www
 Creating a new style
 --------------------
 
-#. Navigate to the GeoServer Styles list. CLick the ``Add a new style`` option.
+#. Navigate to the GeoServer Styles list. Click the ``Add a new style`` option.
 
-   Name this new style ``mbline`` and set the format to ``MBStyle``. 
+   Name this new style ``mbline`` and set the format to ``MBStyle``.
+
+   Under the ``Generate a default style`` option, select ``Line`` and click the ``Generate`` link to create a default line style. 
 
 .. TODO: If generate works, add instructions for generating a new MBStyle, else provide one we can paste.
 
