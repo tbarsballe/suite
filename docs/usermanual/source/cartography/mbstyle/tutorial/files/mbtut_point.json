@@ -1,0 +1,75 @@
+{
+    "version": 8,
+    "name": "places",
+    "sprite": "http://localhost:8080/geoserver/styles/sprites"
+    "layers": [
+        {
+            "id": "capitals-circle",
+            "maxzoom": 2,
+            "filter": ["==", "ADM0CAP", 1],
+            "type": "circle",
+            "paint": {
+                "circle-color": "#777777",
+                "circle-stroke-color": "#000000",
+                "circle-radius": 3
+            }
+        },
+        {
+            "id": "capitals-star",
+            "minzoom": 2,
+            "filter": ["==", "ADM0CAP", 1],
+            "type": "symbol",
+            "layout": {
+                "icon-image": "capitol",
+                "icon-size": {
+                    "property": "POP_MAX",
+                    "type": "exponential",
+                    "stops": [
+                        [0, 0.3],
+                        [40000000, 0.8]
+                    ]
+                }
+            }
+        },
+        {
+            "id": "capitals-label",
+            "minzoom": 3,
+            "filter": ["==", "ADM0CAP", 1],
+            "type": "symbol",
+            "layout": {
+                "text-field": "{NAME}",
+                "text-anchor": "bottom-left",
+                "text-offset": [3,2],
+            }
+        },
+        {
+            "id": "places-circle",
+            "minzoom": 2,
+            "filter": ["!=", "ADM0CAP", 1],
+            "type": "circle",
+            "paint": {
+                "circle-color": "#777777",
+                "circle-stroke-color": "#000000",
+                "circle-radius": {
+                    "property": "POP_MAX",
+                    "type": "exponential",
+                    "stops": [
+                        [0, 2],
+                        [40000000, 5]
+                    ]
+                }
+            }
+        },
+        {
+            "id": "places-label",
+            "minzoom": 4,
+            "filter": ["!=", "ADM0CAP", 1],
+            "type": "symbol",
+            "layout": {
+                "text-field": "{NAME}",
+                "text-anchor": "bottom-left",
+                "text-offset": [3,2],
+        }
+        }
+    ]
+}
