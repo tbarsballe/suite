@@ -5,6 +5,7 @@
         {
             "type": "fill",
             "id": "countries-fill",
+            "source-layer": "countries",
             "paint": {
                 "fill-color": {
                     "property": "MAPCOLOR7",
@@ -25,6 +26,7 @@
         {
             "type": "line",
             "id": "countries-line",
+            "source-layer": "countries",
             "paint": {
                 "line-color": "#777777",
                 "line-width": 0.5,
@@ -34,6 +36,7 @@
         {
             "type": "symbol",
             "id": "countries-symbol",
+            "source-layer": "countries",
             "layout": {
                 "text-field": "{NAME}",
                 "text-transform": "uppercase",

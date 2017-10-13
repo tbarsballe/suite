@@ -14,8 +14,6 @@ Creating a new style
 
    Under the ``Generate a default style`` option, select ``Line`` and click the ``Generate`` link to create a default line style. 
 
-.. TODO: If generate works, add instructions for generating a new MBStyle, else provide one we can paste.
-
    Click the ``Apply`` button, then navigate to the ``Layer Preview`` tab and select the ``roads`` layer to preview the style.
 
    .. figure:: ../../ysld/tutorial/img/line_default.png
@@ -43,56 +41,23 @@ Creating a new style
 Name and id
 -----------
 
-The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. 
+The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
+
+.. note:: When viewing the style in the Layer Preview tab, ensure the ``Preview as style group`` option is checked, to ensure that ``source-layer`` is used to determine the layer(s) to render the style on.
 
 #. Modify the name and id elements in the default style:
 
    .. code-block:: yaml
-      :emphasize-lines: 3, 6
+      :emphasize-lines: 3, 6-7
       
       {
           "version": 8,
-          "name": roads
+          "name": roads,
           "layers": [
               {
                   "id": "roads"
-                  "type": "line",
-                  "paint": {
-                      "line-color": "#333333",
-                  }
-              }
-          ],
-      }
-
-Sources
--------
-
-.. TODO: Move this to the end until it is actually supported by geoserver?
-
-MBStyles have a `sources <https://www.mapbox.com/mapbox-gl-js/style-spec/#root-sources>`_ element, which describes the data to be rendered by the style. This is used by client applications to retrieve vector data.
-
-.. note:: GeoServer currently ignores the sources element, but supports it for compatibility with client-side styles. As such, the sources element will not be used for this tutorial
-
-#. A sources element for the countries layer would look like this:
-
-   .. code-block:: json
-      :emphasize-lines: 4-8, 14-15
-
-      {
-          "version": 8,
-          "name": "roads"
-          "sources": {
-              "test-roads": {
-                  "url": "http://localhost:8080/geoserver/test/roads/wms",
-                  "type": "vector"
-              }
-          },
-          "layers": [
-              {
-                  "id": "roads",
-                  "type": "line",
-                  "source": "test-roads",
                   "source-layer": "roads",
+                  "type": "line",
                   "paint": {
                       "line-color": "#333333",
                   }
@@ -103,7 +68,7 @@ MBStyles have a `sources <https://www.mapbox.com/mapbox-gl-js/style-spec/#root-s
 #. We can immediately see that there are far more roads than we need on this layer. Fortunately, the road data contains a scalerank attribute to help determine the importance of different roads. Add a `filter <https://www.mapbox.com/mapbox-gl-js/style-spec/#types-filter>` to only show roads with scalerank < 4. Then our style looks like:
 
    .. code-block:: json
-      :emphasize-lines: 6-7
+      :emphasize-lines: 8
 
       {
           "version": 8,
@@ -111,6 +76,7 @@ MBStyles have a `sources <https://www.mapbox.com/mapbox-gl-js/style-spec/#root-s
           "layers": [
               {
                   "id": "big",
+                  "source-layer": "roads",
                   "filter": ["<", "scalerank", 4],
                   "type": "line",
                   "paint": {
@@ -132,7 +98,7 @@ If we zoom in, we want to see all the roads, not just those included in our filt
 #. Add a zoom function to the existing (``big``) rule, and add the other two rules (``medium`` and ``small``):
 
    .. code-block:: json
-      :emphasize-lines: 8, 15-34
+      :emphasize-lines: 9, 16-37
       
       {
           "version": 8,
@@ -140,6 +106,7 @@ If we zoom in, we want to see all the roads, not just those included in our filt
           "layers": [
               {
                   "id": "big",
+                  "source-layer": "roads",
                   "filter": ["<", "scalerank", 4],
                   "maxzoom": 6,
                   "type": "line",
@@ -150,6 +117,7 @@ If we zoom in, we want to see all the roads, not just those included in our filt
               },
               {
                   "id": "medium",
+                  "source-layer": "roads",
                   "filter": ["<", "scalerank", 8],
                   "minzoom": 6,
                   "maxzoom": 8,
@@ -161,6 +129,7 @@ If we zoom in, we want to see all the roads, not just those included in our filt
               },
               {
                   "id": "small",
+                  "source-layer": "roads",
                   "minzoom": 8,
                   "type": "line",
                   "paint": {
@@ -179,7 +148,7 @@ On the smaller scales, we want some differentiation between roads based on the f
 #. Add a new layer for roads that have attribute ``featurecla = 'Ferry'``, and draw these roads with a blue line. Put this rule third in the list of four:
 
    .. code-block:: json
-      :emphasize-lines: 26-33
+      :emphasize-lines: 28-36
       
       {
           "version": 8,
@@ -187,6 +156,7 @@ On the smaller scales, we want some differentiation between roads based on the f
           "layers": [
               {
                   "id": "big",
+                  "source-layer": "roads",
                   "filter": ["<", "scalerank", 4],
                   "maxzoom": 6,
                   "type": "line",
@@ -197,6 +167,7 @@ On the smaller scales, we want some differentiation between roads based on the f
               },
               {
                   "id": "medium",
+                  "source-layer": "roads",
                   "filter": ["<", "scalerank", 8],
                   "minzoom": 6,
                   "maxzoom": 8,
@@ -208,6 +179,7 @@ On the smaller scales, we want some differentiation between roads based on the f
               },
               {
                   "id": "ferry",
+                  "source-layer": "roads",
                   "filter": ["==", "featurecla", "Ferry"],
                   "minzoom": 6,
                   "type": "line",
@@ -217,6 +189,7 @@ On the smaller scales, we want some differentiation between roads based on the f
               },
               {
                   "id": "small",
+                  "source-layer": "roads",
                   "minzoom": 8,
                   "type": "line",
                   "paint": {
@@ -231,10 +204,11 @@ On the smaller scales, we want some differentiation between roads based on the f
 #. Further modify this rule to use a dashed line. Add the following ``line-width`` and ``line-dasharray`` lines:
 
    .. code-block:: json
-      :emphasize-lines: 6-7
+      :emphasize-lines: 7-8
       
       {
           "id": "ferry",
+          "source-layer": "roads",
           "filter": ["==", "featurecla", "Ferry"],
           "minzoom": 6,
           "type": "line",
@@ -262,6 +236,7 @@ The ``line-gap-width`` property can be used to draw a line casing.
 
       {
           "id": "expressway",
+          "source-layer": "roads",
           "filter": ["==", "expressway", 1],
           "minzoom": 6,
           "type": "line",
@@ -279,6 +254,7 @@ The ``line-gap-width`` property can be used to draw a line casing.
 
       {
           "id": "inner",
+          "source-layer": "roads",
           "filter": ["==", "expressway", 1],
           "minzoom": 6,
           "type": "line",
@@ -298,10 +274,11 @@ The ``line-gap-width`` property can be used to draw a line casing.
 #. Now that we have these rules for special types of "roads", we want to make sure our ``medium`` layer does not also draw lines for these special roads. We can add a filter to the rule to exclude these from the layer (``!=`` means "not equal to"):
 
    .. code-block:: json
-      :emphasize-lines: 3
+      :emphasize-lines: 4
 
       {
           "id": "medium",
+          "source-layer": "roads",
           "filter": ["all", ["<", "scalerank", 8], ["!=", "expressway", 1], ["!=", "featurecla", "Ferry"]],
           "minzoom": 6,
           "type": "line",

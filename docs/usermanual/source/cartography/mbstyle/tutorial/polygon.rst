@@ -14,8 +14,6 @@ Creating a new style
 
    Under the ``Generate a default style`` option, select ``Point`` and click the ``Generate`` link to create a default polygon style. 
 
-.. TODO: If generate works, add instructions for generating a new MBStyle, else provide one we can paste.
-
    Click the ``Apply`` button, then navigate to the ``Layer Preview`` tab and select the ``countries`` layer to preview the style.
 
    .. figure:: ../../ysld/tutorial/img/poly_default.png
@@ -44,12 +42,14 @@ Creating a new style
 Name and id
 -----------
 
-The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. 
+The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
+
+.. note:: When viewing the style in the Layer Preview tab, ensure the ``Preview as style group`` option is checked, to ensure that ``source-layer`` is used to determine the layer(s) to render the style on.
 
 #. Modify the name and id elements in the default style:
 
    .. code-block:: yaml
-      :emphasize-lines: 3, 6
+      :emphasize-lines: 3, 6-7
       
       {
           "version": 8,
@@ -57,44 +57,8 @@ The style can be given a ``name`` parameter, and layers within the style can be 
           "layers": [
               {
                   "id": "countries",
-                  "type": "fill",
-                  "paint": {
-                      "fill-color": "#FFFF00",
-                      "fill-outline-color":"#000000"
-                  }
-              }
-          ],
-      }
-
-Sources
--------
-
-.. TODO: Move this to the end until it is actually supported by geoserver?
-
-MBStyles have a `sources <https://www.mapbox.com/mapbox-gl-js/style-spec/#root-sources>`_ element, which describes the data to be rendered by the style. This is used by client applications to retrieve vector data.
-
-.. note:: GeoServer currently ignores the sources element, but supports it for compatibility with client-side styles. As such, the sources element will not be used for this tutorial
-
-#. A sources element for the countries layer would look like this:
-
-   .. code-block:: json
-      :emphasize-lines: 4-8, 14-15
-   
-      {
-          "version": 8,
-          "name": "countries"
-          "sources": {
-              "test-countries": {
-                  "url": "http://localhost:8080/geoserver/test/countries/wms",
-                  "type": "vector"
-              }
-          },
-          "layers": [
-              {
-                  "id": "countries",
-                  "type": "fill",
-                  "source": "test-countries",
                   "source-layer": "countries",
+                  "type": "fill",
                   "paint": {
                       "fill-color": "#FFFF00",
                       "fill-outline-color":"#000000"
@@ -108,16 +72,15 @@ Setting basic styling
 
 Fill layers provide options for styling the fill (inside) of features. While they do provide a fill-outline parameter for setting an outline color, more advanced outline styling requires a line layer.
 
-.. TODO: Move line section of the tutorial before polygon, so uses will already have experience with line layers
-
 #. Fill styling is defined primarily by ``fill-color`` and ``fill-opacity``. Change the style to use a 50% transparent brown fill:
 
    .. code-block:: json
-      :emphasize-lines: 5-6
+      :emphasize-lines: 6-7
     
       {
           "type": "fill",
           "id": "countries",
+          "source-layer": "countries",
           "paint": {
               "fill-color": "#EFEFC3",
               "fill-opacity": 0.5
@@ -133,6 +96,7 @@ Fill layers provide options for styling the fill (inside) of features. While the
       {
           "type": "line",
           "id": "countries-line",
+          "source-layer": "countries",
           "paint": {
               "line-color": "#777777",
               "line-width": 0.5
@@ -143,11 +107,12 @@ Fill layers provide options for styling the fill (inside) of features. While the
 #. Additional styling options are available for both stroke and fill, and can be found in the `fill layer <https://www.mapbox.com/mapbox-gl-js/style-spec/#layers-fill>` and `line layer <https://www.mapbox.com/mapbox-gl-js/style-spec/#layers-line>` sections of the MapBox specification respectively. Use ``line-dasharray`` to change the line style to a dashed line of 4 pixels with 4 pixel gaps.
 
    .. code-block:: json
-      :emphasize-lines: 7
+      :emphasize-lines: 8
     
       {
           "type": "line",
           "id": "countries-line",
+          "source-layer": "countries",
           "paint": {
               "line-color": "#777777",
               "line-width": 0.5,
@@ -166,6 +131,7 @@ Fill layers provide options for styling the fill (inside) of features. While the
               {
                   "type": "fill",
                   "id": "countries-fill",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#EFEFC3",
                       "fill-opacity": 0.5
@@ -174,6 +140,7 @@ Fill layers provide options for styling the fill (inside) of features. While the
               {
                   "type": "line",
                   "id": "countries-line",
+                  "source-layer": "countries",
                   "paint": {
                       "line-color": "#777777",
                       "line-width": 0.5,
@@ -197,7 +164,7 @@ Labels can be applied to any layer using a `symbol layer <https://www.mapbox.com
 #. Add a symbol layer with a basic label using the ``text-field`` parameter and the ``NAME`` attribute:
    
    .. code-block:: yaml
-      :emphasize-lines: 22-28
+      :emphasize-lines: 24-31
    
       {
           "version": 8,
@@ -206,6 +173,7 @@ Labels can be applied to any layer using a `symbol layer <https://www.mapbox.com
               {
                   "type": "fill",
                   "id": "countries-fill",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#EFEFC3",
                       "fill-opacity": 0.5
@@ -214,6 +182,7 @@ Labels can be applied to any layer using a `symbol layer <https://www.mapbox.com
               {
                   "type": "line",
                   "id": "countries-line",
+                  "source-layer": "countries",
                   "paint": {
                       "line-color": "#777777",
                       "line-width": 0.5,
@@ -223,6 +192,7 @@ Labels can be applied to any layer using a `symbol layer <https://www.mapbox.com
               {
                   "type": "symbol",
                   "id": "countries-symbol",
+                  "source-layer": "countries",
                   "layout": {
                       "text-field": "{NAME}"
                   }
@@ -271,7 +241,7 @@ The default labeling parameters are not ideal, but a number of styling options a
       :class: non-responsive
       :widths: 40 60 
       :header-rows: 1
-      
+
       * - Parameter
         - Description
       * - ``text-color: '#333333'``
@@ -280,7 +250,7 @@ The default labeling parameters are not ideal, but a number of styling options a
 #. With the label styling, the style now looks like this:
 
    .. code-block:: json
-      :emphasize-lines: 27-34
+      :emphasize-lines: 30-37
    
       {
           "version": 8,
@@ -289,6 +259,7 @@ The default labeling parameters are not ideal, but a number of styling options a
               {
                   "type": "fill",
                   "id": "countries-fill",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#EFEFC3",
                       "fill-opacity": 0.5
@@ -297,6 +268,7 @@ The default labeling parameters are not ideal, but a number of styling options a
               {
                   "type": "line",
                   "id": "countries-line",
+                  "source-layer": "countries",
                   "paint": {
                       "line-color": "#777777",
                       "line-width": 0.5,
@@ -306,6 +278,7 @@ The default labeling parameters are not ideal, but a number of styling options a
               {
                   "type": "symbol",
                   "id": "countries-symbol",
+                  "source-layer": "countries",
                   "layout": {
                       "text-field": "{NAME}",
                       "text-transform": "uppercase",
@@ -358,7 +331,7 @@ Suppose we wish to display different colors for each country. The countries laye
 #. After adding the filters, the style will look like:
    
    .. code-block:: json
-      :emphasize-lines: 5-67
+      :emphasize-lines: 5-74
 
       {
           "version": 8,
@@ -368,6 +341,7 @@ Suppose we wish to display different colors for each country. The countries laye
                   "type": "fill",
                   "filter": ["==", "MAPCOLOR7", 1],
                   "id": "countries-fill-1",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#FFC3C3",
                       "fill-opacity": 0.5
@@ -377,6 +351,7 @@ Suppose we wish to display different colors for each country. The countries laye
                   "type": "fill",
                   "filter": ["==", "MAPCOLOR7", 2],
                   "id": "countries-fill-2",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#FFE3C3",
                       "fill-opacity": 0.5
@@ -386,6 +361,7 @@ Suppose we wish to display different colors for each country. The countries laye
                   "type": "fill",
                   "filter": ["==", "MAPCOLOR7", 3],
                   "id": "countries-fill-3",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#FFFFC3",
                       "fill-opacity": 0.5
@@ -395,6 +371,7 @@ Suppose we wish to display different colors for each country. The countries laye
                   "type": "fill",
                   "filter": ["==", "MAPCOLOR7", 4],
                   "id": "countries-fill-4",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#C3FFE3",
                       "fill-opacity": 0.5
@@ -404,6 +381,7 @@ Suppose we wish to display different colors for each country. The countries laye
                   "type": "fill",
                   "filter": ["==", "MAPCOLOR7", 5],
                   "id": "countries-fill-5",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#C3FFFF",
                       "fill-opacity": 0.5
@@ -413,6 +391,7 @@ Suppose we wish to display different colors for each country. The countries laye
                   "type": "fill",
                   "filter": ["==", "MAPCOLOR7", 6],
                   "id": "countries-fill-6",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#C3C3FF",
                       "fill-opacity": 0.5
@@ -422,6 +401,7 @@ Suppose we wish to display different colors for each country. The countries laye
                   "type": "fill",
                   "filter": ["==", "MAPCOLOR7", 7],
                   "id": "countries-fill-7",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#FFC3FF",
                       "fill-opacity": 0.5
@@ -430,6 +410,7 @@ Suppose we wish to display different colors for each country. The countries laye
               {
                   "type": "line",
                   "id": "countries-line",
+                  "source-layer": "countries",
                   "paint": {
                       "line-color": "#777777",
                       "line-width": 0.5,
@@ -439,6 +420,7 @@ Suppose we wish to display different colors for each country. The countries laye
               {
                   "type": "symbol",
                   "id": "countries-symbol",
+                  "source-layer": "countries",
                   "layout": {
                       "text-field": "{NAME}",
                       "text-transform": "uppercase",
@@ -466,7 +448,7 @@ While filters are very useful, the required syntax is still quite long, and much
 #. Remove all of the polygon rules and the variable at the top, and replace with our original rule:
    
    .. code-block:: yaml
-      :emphasize-lines: 5-12
+      :emphasize-lines: 5-13
       
       {
           "version": 8,
@@ -475,6 +457,7 @@ While filters are very useful, the required syntax is still quite long, and much
               {
                   "type": "fill",
                   "id": "countries-fill",
+                  "source-layer": "countries",
                   "paint": {
                       "fill-color": "#EFEFC3",
                       "fill-opacity": 0.5
@@ -483,6 +466,7 @@ While filters are very useful, the required syntax is still quite long, and much
               {
                   "type": "line",
                   "id": "countries-line",
+                  "source-layer": "countries",
                   "paint": {
                       "line-color": "#777777",
                       "line-width": 0.5,
@@ -492,6 +476,7 @@ While filters are very useful, the required syntax is still quite long, and much
               {
                   "type": "symbol",
                   "id": "countries-symbol",
+                  "source-layer": "countries",
                   "layout": {
                       "text-field": "{NAME}",
                       "text-transform": "uppercase",
@@ -509,11 +494,12 @@ While filters are very useful, the required syntax is still quite long, and much
 #. Change the ``fill-color`` to the following function:
    
    .. code-block:: json
-      :emphasize-lines: 5-17
+      :emphasize-lines: 6-18
       
       {
           "type": "fill",
           "id": "countries-fill",
+          "source-layer": "countries",
           "paint": {
               "fill-color": {
                   "property": "MAPCOLOR7",

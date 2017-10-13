@@ -46,12 +46,14 @@ Creating a new style
 Name and id
 -----------
 
-The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. 
+The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
+
+.. note:: When viewing the style in the Layer Preview tab, ensure the ``Preview as style group`` option is checked, to ensure that ``source-layer`` is used to determine the layer(s) to render the style on.
 
 #. Modify the name and id elements in the default style:
 
    .. code-block:: json
-      :emphasize-lines: 3, 6
+      :emphasize-lines: 3, 6-7
       
       {
         "version": 8,
@@ -59,44 +61,8 @@ The style can be given a ``name`` parameter, and layers within the style can be 
         "layers": [
             {
                 "id": "dem",
+                "source-layer": "dem",
                 "type": "raster",
-                "paint": {
-                    "raster-opacity": 1
-                }
-            }
-        ]
-      }
-
-
-Sources
--------
-
-.. TODO: Move this to the end until it is actually supported by geoserver?
-
-MBStyles have a `sources <https://www.mapbox.com/mapbox-gl-js/style-spec/#root-sources>`_ element, which describes the data to be rendered by the style. This is used by client applications to retrieve vector data.
-
-.. note:: GeoServer currently ignores the sources element, but supports it for compatibility with client-side styles. As such, the sources element will not be used for this tutorial
-
-#. A sources element for the countries layer would look like this:
-
-   .. code-block:: json
-      :emphasize-lines: 4-8, 14-15
-
-      {
-        "version": 8,
-        "name": "dem",
-        "sources": {
-              "test-dem": {
-                  "url": "http://localhost:8080/geoserver/test/dem/wms",
-                  "type": "raster"
-              }
-          },
-        "layers": [
-            {
-                "id": "dem",
-                "type": "raster",
-                "source": "test-dem",
-                "source-layer": "dem_large",
                 "paint": {
                     "raster-opacity": 1
                 }
@@ -110,7 +76,7 @@ Adding contrast
 #. If we want the land to show up better in the display, we can use the ``raster-contrast`` and ``raster-brightness-max`` attributes:
 
    .. code-block:: json
-      :emphasize-lines: 10-11
+      :emphasize-lines: 11-12
       
       {
           "version": 8,
@@ -118,6 +84,7 @@ Adding contrast
           "layers": [
               {
                   "id": "dem",
+                  "source-layer": "dem",
                   "type": "raster",
                   "paint": {
                       "raster-opacity": 1,

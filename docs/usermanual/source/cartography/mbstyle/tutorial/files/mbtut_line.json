@@ -4,6 +4,7 @@
     "layers": [
         {
             "id": "big",
+            "source-layer": "roads",
             "filter": ["<", "scalerank", 4],
             "maxzoom": 6,
             "type": "line",
@@ -14,6 +15,7 @@
         },
         {
             "id": "medium",
+            "source-layer": "roads",
             "filter": ["all", ["<", "scalerank", 8], ["!=", "expressway", 1], ["!=", "featurecla", "Ferry"]],
             "minzoom": 6,
             "maxzoom": 8,
@@ -25,6 +27,7 @@
         },
         {
             "id": "ferry",
+            "source-layer": "roads",
             "filter": ["==", "featurecla", "Ferry"],
             "minzoom": 6,
             "type": "line",
@@ -36,6 +39,7 @@
         },
         {
             "id": "expressway",
+            "source-layer": "roads",
             "filter": ["==", "expressway", 1],
             "minzoom": 6,
             "type": "line",
@@ -48,6 +52,7 @@
         },
         {
             "id": "inner",
+            "source-layer": "roads",
             "filter": ["==", "expressway", 1],
             "minzoom": 6,
             "type": "line",
@@ -59,6 +64,7 @@
         },
         {
             "id": "small",
+            "source-layer": "roads",
             "filter": ["all", ["!=", "expressway", 1], ["!=", "featurecla", "Ferry"]],
             "minzoom": 8,
             "type": "line",

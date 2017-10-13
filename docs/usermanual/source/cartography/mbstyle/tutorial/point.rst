@@ -43,12 +43,14 @@ Creating a new style
 Name and id
 -----------
 
-The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. 
+The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
+
+.. note:: When viewing the style in the Layer Preview tab, ensure the ``Preview as style group`` option is checked, to ensure that ``source-layer`` is used to determine the layer(s) to render the style on.
 
 #. Modify the name and id elements in the default style:
 
    .. code-block::json
-      :emphasize-lines: 3, 6, 8-9
+      :emphasize-lines: 3, 6-7, 9-10
       
       {
         "version": 8,
@@ -56,6 +58,7 @@ The style can be given a ``name`` parameter, and layers within the style can be 
         "layers": [
             {
                 "id": "places"
+                "source-layer": "places",
                 "type": "circle",
                 "paint": {
                     "circle-color": "#777777",
@@ -65,50 +68,13 @@ The style can be given a ``name`` parameter, and layers within the style can be 
         ]
       }
 
-Sources
--------
-
-.. TODO: Move this to the end until it is actually supported by geoserver?
-
-MBStyles have a `sources <https://www.mapbox.com/mapbox-gl-js/style-spec/#root-sources>`_ element, which describes the data to be rendered by the style. This is used by client applications to retrieve vector data.
-
-.. note:: GeoServer currently ignores the sources element, but supports it for compatibility with client-side styles. As such, the sources element will not be used for this tutorial
-
-#. A sources element for the countries layer would look like this:
-
-   .. code-block:: json
-      :emphasize-lines: 4-8, 14-15
-
-      {
-          "version": 8,
-          "name": "places"
-          "sources": {
-              "test-places": {
-                  "url": "http://localhost:8080/geoserver/test/places/wms",
-                  "type": "vector"
-              }
-          },
-          "layers": [
-              {
-                  "id": "places",
-                  "type": "circle",
-                  "source": "test-places",
-                  "source-layer": "places",
-                  "paint": {
-                      "circle-color": "#777777",
-                      "circle-stroke-color": "#000000",
-                  }
-              }
-          ],
-      }
-
 Adding filters and labels
 -------------------------
 
 #. There are a lot of points in this data set, and we don't want to draw all of them. Use the ``ADM0CAP`` attribute and a filter to show only points that correspond to capital cities (``ADM0CAP = 1``):
 
    .. code-block:: json
-      :emphasize-lines: 3,7
+      :emphasize-lines: 3,8
 
       {
         "version": 8,
@@ -116,6 +82,7 @@ Adding filters and labels
         "layers": [
             {
                 "id": "places",
+                "source-layer": "places",
                 "filter": ["==", "ADM0CAP", 1],
                 "type": "circle",
                 "paint": {
@@ -130,7 +97,7 @@ Adding filters and labels
 #. Add a symbol layer referencing the ``NAME`` attribute to display the names of the cities:
 
    .. code-block:: json
-      :emphasize-lines: 15-22
+      :emphasize-lines: 16-24
 
       {
         "version": 8,
@@ -138,6 +105,7 @@ Adding filters and labels
         "layers": [
             {
                 "id": "places",
+                "source-layer": "places",
                 "filter": ["==", "ADM0CAP", 1],
                 "type": "circle",
                 "paint": {
@@ -148,6 +116,7 @@ Adding filters and labels
             },
             {
                 "id": "capitals-label",
+                "source-layer": "places",
                 "filter": ["==", "ADM0CAP", 1],
                 "type": "symbol",
                 "layout": {
@@ -178,7 +147,7 @@ We can now define a top-level ``sprites`` parameter with the URL to the spritesh
 #. Modify the existing symbol layer with the following:
 
    .. code-block:: json
-      :emphasize-lines: 4,13-15
+      :emphasize-lines: 4,14-16
 
       {
         "version": 8,
@@ -187,6 +156,7 @@ We can now define a top-level ``sprites`` parameter with the URL to the spritesh
         "layers": [
             {
                 "id": "capitals",
+                "source-layer": "places",
                 "filter": ["==", "ADM0CAP", 1],
                 "type": "symbol",
                 "layout": {
@@ -209,7 +179,7 @@ We can now define a top-level ``sprites`` parameter with the URL to the spritesh
 #. Since this data set contains population attributes, we can scale the size of the points based on population. Use an exponention function on the ``POP_MAX`` property for the ``icon-size`` parameter to get a relative scale without too much variation in point size:
 
    .. code-block:: json
-      :emphasize-lines: 15-22
+      :emphasize-lines: 16-23
 
       {
         "version": 8,
@@ -218,6 +188,7 @@ We can now define a top-level ``sprites`` parameter with the URL to the spritesh
         "layers": [
             {
                 "id": "capitals",
+                "source-layer": "places",
                 "filter": ["==", "ADM0CAP", 1],
                 "type": "symbol",
                 "layout": {
@@ -256,7 +227,7 @@ To improve the display further, we can add scale rules.
    This results in the following style:
 
    .. code-block:: json
-      :emphasize-lines: 6-44
+      :emphasize-lines: 6-47
 
       {
         "version": 8,
@@ -265,6 +236,7 @@ To improve the display further, we can add scale rules.
         "layers": [
             {
                 "id": "capitals-circle",
+                "source-layer": "places",
                 "maxzoom": 2,
                 "filter": ["==", "ADM0CAP", 1],
                 "type": "circle",
@@ -276,6 +248,7 @@ To improve the display further, we can add scale rules.
             },
             {
                 "id": "capitals-star",
+                "source-layer": "places",
                 "minzoom": 2,
                 "filter": ["==", "ADM0CAP", 1],
                 "type": "symbol",
@@ -293,6 +266,7 @@ To improve the display further, we can add scale rules.
             },
             {
                 "id": "capitals-label",
+                "source-layer": "places",
                 "minzoom": 3,
                 "filter": ["==", "ADM0CAP", 1],
                 "type": "symbol",
@@ -312,6 +286,7 @@ To improve the display further, we can add scale rules.
 
       {
           "id": "places-circle",
+          "source-layer": "places",
           "minzoom": 2,
           "filter": ["!=", "ADM0CAP", 1],
           "type": "circle",
@@ -333,6 +308,7 @@ To improve the display further, we can add scale rules.
 
       {
           "id": "places-label",
+          "source-layer": "places",
           "minzoom": 4,
           "filter": ["!=", "ADM0CAP", 1],
           "type": "symbol",

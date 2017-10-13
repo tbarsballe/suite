@@ -1,10 +1,11 @@
 {
     "version": 8,
     "name": "places",
-    "sprite": "http://localhost:8080/geoserver/styles/sprites"
+    "sprite": "http://localhost:8080/geoserver/styles/sprites",
     "layers": [
         {
             "id": "capitals-circle",
+            "source-layer": "places",
             "maxzoom": 2,
             "filter": ["==", "ADM0CAP", 1],
             "type": "circle",
@@ -16,6 +17,7 @@
         },
         {
             "id": "capitals-star",
+            "source-layer": "places",
             "minzoom": 2,
             "filter": ["==", "ADM0CAP", 1],
             "type": "symbol",
@@ -33,6 +35,7 @@
         },
         {
             "id": "capitals-label",
+            "source-layer": "places",
             "minzoom": 3,
             "filter": ["==", "ADM0CAP", 1],
             "type": "symbol",
@@ -44,6 +47,7 @@
         },
         {
             "id": "places-circle",
+            "source-layer": "places",
             "minzoom": 2,
             "filter": ["!=", "ADM0CAP", 1],
             "type": "circle",
@@ -62,14 +66,15 @@
         },
         {
             "id": "places-label",
+            "source-layer": "places",
             "minzoom": 4,
             "filter": ["!=", "ADM0CAP", 1],
             "type": "symbol",
             "layout": {
                 "text-field": "{NAME}",
                 "text-anchor": "bottom-left",
-                "text-offset": [3,2],
-        }
+                "text-offset": [3,2]
+            }
         }
     ]
 }
