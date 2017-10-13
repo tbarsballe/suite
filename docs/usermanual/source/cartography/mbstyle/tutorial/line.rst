@@ -213,6 +213,7 @@ On the smaller scales, we want some differentiation between roads based on the f
                   "type": "line",
                   "paint": {
                       "line-color": "#00CCFF"
+                  }
               },
               {
                   "id": "small",
@@ -242,11 +243,11 @@ On the smaller scales, we want some differentiation between roads based on the f
               "line-width": 2,
               "line-dasharray": [4, 6]
           }
-      },
+      }
 
 #. After adding the ferry rule, this is the view when zoomed in:
 
-   .. figure:: img/line_ferry.png
+   .. figure:: ../../ysld/tutorial/img/line_ferry.png
 
       Ferry rule and other styles
 
@@ -270,7 +271,7 @@ The ``line-gap-width`` property can be used to draw a line casing.
               "line-gap-width": 4,
               "line-cap": "round"
           }
-      },
+      }
 
 #. Below this rule, add another new layer to draw expressways using 4 pixel orange lines with round ends:
 
@@ -286,11 +287,11 @@ The ``line-gap-width`` property can be used to draw a line casing.
               "line-width": 4,
               "line-cap": "round"
           }
-      },
+      }
 
 #. After adding the ferries and expressways layers, this is the view when zoomed in:
 
-   .. figure:: img/line_intermediate.png
+   .. figure:: ../../ysld/tutorial/img/line_intermediate.png
 
       Road casing and other styles
 
@@ -308,7 +309,7 @@ The ``line-gap-width`` property can be used to draw a line casing.
               "line-color": "#333333",
               "line-width": 1
           }
-      },
+      }
 
 #. Add a similar filter to the ``small`` layer.
 
@@ -322,18 +323,18 @@ After all these changes, the final style should look like this:
 
 The resulting map shows different levels of road detail at different zoom levels:
 
-.. figure:: img/line_all_zoom_1.png
+.. figure:: ../../ysld/tutorial/img/line_all_zoom_1.png
 
    Completed Roads layer (zoomed out)
 
-.. figure:: img/line_all_zoom_2.png
+.. figure:: ../../ysld/tutorial/img/line_all_zoom_2.png
 
    Completed Roads layer (intermediate zoom)
 
-.. figure:: img/line_all_zoom_3.png
+.. figure:: ../../ysld/tutorial/img/line_all_zoom_3.png
 
    Completed Roads layer (zoomed in)
 
 .. note:: :download:`Download the final line style <files/mbtut_line.json>`
 
-Continue on to :ref:`cartography.mbstyle.tutorial.poolygon`.
+Continue on to :ref:`cartography.mbstyle.tutorial.polygon`.

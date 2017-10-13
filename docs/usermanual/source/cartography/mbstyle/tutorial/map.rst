@@ -1,4 +1,4 @@
-.. _cartography.ysld.tutorial.map:
+.. _cartography.mbstyle.tutorial.map:
 
 Composing a map
 ===============
@@ -16,16 +16,14 @@ In Composer, create a new map with the four layers styled in the following order
 
 This will produce a map that looks like the following at various zoom levels:
 
-.. figure:: img/map_zoom_1.png
+.. figure:: ../../ysld/tutorial/img/map_zoom_1.png
 
    Map at world scale
 
-.. figure:: img/map_zoom_2.png
+.. figure:: ../../ysld/tutorial/img/map_zoom_2.png
 
    Map at region scale
 
-.. figure:: img/map_zoom_3.png
+.. figure:: ../../ysld/tutorial/img/map_zoom_3.png
 
    Map at city scale
-
-For more information on YSLD, please see the :ref:`cartography.ysld.reference`.

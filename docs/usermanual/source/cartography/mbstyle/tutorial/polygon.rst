@@ -271,6 +271,9 @@ The default labeling parameters are not ideal, but a number of styling options a
       :class: non-responsive
       :widths: 40 60 
       :header-rows: 1
+      
+      * - Parameter
+        - Description
       * - ``text-color: '#333333'``
         - Change the font color to dark gray
 

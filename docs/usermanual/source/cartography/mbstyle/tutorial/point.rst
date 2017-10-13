@@ -327,7 +327,10 @@ To improve the display further, we can add scale rules.
                   ]
               }
           }
-      },
+      }
+
+   .. code-block:: json
+
       {
           "id": "places-label",
           "minzoom": 4,
@@ -336,7 +339,7 @@ To improve the display further, we can add scale rules.
           "layout": {
               "text-field": "{NAME}",
               "text-anchor": "bottom-left",
-              "text-offset": [3,2],
+              "text-offset": [3,2]
           }
       }
 
