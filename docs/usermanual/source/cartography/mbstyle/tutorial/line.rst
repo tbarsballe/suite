@@ -41,7 +41,7 @@ Creating a new style
 Name and id
 -----------
 
-The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
+The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is the name of the style, and may be displayed. ``id`` is a machine reference to the layer, and should be unique. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
 
 .. note:: When viewing the style in the Layer Preview tab, ensure the ``Preview as style group`` option is checked, to ensure that ``source-layer`` is used to determine the layer(s) to render the style on.
 
@@ -94,6 +94,12 @@ If we zoom in, we want to see all the roads, not just those included in our filt
 * If zoom is greater than 6, show features with ``scalerank < 4``
 * If zoom is between 6 and 8, show features with ``scalerank < 8``
 * If zoom is less than 8, show all features
+
+.. note:: MBStyle uses Web Mercator zoom levels instead of scale for determining scale-based restrictions.
+
+   Zoom level 0 corresponds to a scale of approximately 559,082,000, with each subsequent zoom level having half the scale value. Since zoom levels are discrete (0, 1, 2, etc.) and scale levels are continuous, there are a range of scale levels which correspond to a given zoom level.
+
+   Also be aware of the inverse relationship between scale and zoom; as the zoom level increases, the scale decreases.
 
 #. Add a zoom function to the existing (``big``) rule, and add the other two rules (``medium`` and ``small``):
 

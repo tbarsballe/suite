@@ -14,8 +14,6 @@ Creating a new style
 
    Under the ``Generate a default style`` option, select ``Point`` and click the ``Generate`` link to create a default point style. 
 
-.. TODO: If generate works, add instructions for generating a new MBStyle, else provide one we can paste.
-
    Click the ``Apply`` button, then navigate to the ``Layer Preview`` tab and select the ``places`` layer to preview the style.
 
    .. figure:: ../../ysld/tutorial/img/point_default.png
@@ -43,7 +41,7 @@ Creating a new style
 Name and id
 -----------
 
-The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
+The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is the name of the style, and may be displayed. ``id`` is a machine reference to the layer, and should be unique. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
 
 .. note:: When viewing the style in the Layer Preview tab, ensure the ``Preview as style group`` option is checked, to ensure that ``source-layer`` is used to determine the layer(s) to render the style on.
 
@@ -100,7 +98,7 @@ Adding filters and labels
 #. Add a symbol layer referencing the ``NAME`` attribute to display the names of the cities:
 
    .. code-block:: json
-      :emphasize-lines: 17-25
+      :emphasize-lines: 17-26
 
       {
         "version": 8,
@@ -126,6 +124,7 @@ Adding filters and labels
                 "type": "symbol",
                 "layout": {
                     "text-field": "{NAME}",
+                    "text-font": ["PT Serif"],
                     "text-anchor": "bottom-left",
                     "text-offset": [3,2]
                 }
@@ -152,7 +151,7 @@ We can now define a top-level ``sprites`` parameter with the URL to the spritesh
 #. Modify the existing symbol layer with the following:
 
    .. code-block:: json
-      :emphasize-lines: 4,14-16
+      :emphasize-lines: 4,15-17
 
       {
         "version": 8,
@@ -166,6 +165,7 @@ We can now define a top-level ``sprites`` parameter with the URL to the spritesh
                 "type": "symbol",
                 "layout": {
                     "text-field": "{NAME}",
+                    "text-font": ["PT Serif"],
                     "text-anchor": "bottom-left",
                     "text-offset": [3,4],
                     "icon-image": "capital",
@@ -184,7 +184,7 @@ We can now define a top-level ``sprites`` parameter with the URL to the spritesh
 #. Since this data set contains population attributes, we can scale the size of the points based on population. Use an exponention function on the ``POP_MAX`` property for the ``icon-size`` parameter to get a relative scale without too much variation in point size:
 
    .. code-block:: json
-      :emphasize-lines: 16-23
+      :emphasize-lines: 17-24
 
       {
         "version": 8,
@@ -198,6 +198,7 @@ We can now define a top-level ``sprites`` parameter with the URL to the spritesh
                 "type": "symbol",
                 "layout": {
                     "text-field": "{NAME}",
+                    "text-font": ["PT Serif"],
                     "text-anchor": "bottom-left",
                     "text-offset": [3,4],
                     "icon-image": "capitol",
@@ -278,6 +279,7 @@ To improve the display further, we can add scale rules.
                 "type": "symbol",
                 "layout": {
                     "text-field": "{NAME}",
+                    "text-font": ["PT Serif"],
                     "text-anchor": "bottom-left",
                     "text-offset": [3,2]
                 }
@@ -321,6 +323,7 @@ To improve the display further, we can add scale rules.
           "type": "symbol",
           "layout": {
               "text-field": "{NAME}",
+              "text-font": ["PT Serif"],
               "text-anchor": "bottom-left",
               "text-offset": [3,2]
           }

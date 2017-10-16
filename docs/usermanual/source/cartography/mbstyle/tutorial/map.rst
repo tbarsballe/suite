@@ -5,7 +5,7 @@ Composing a map
 
 Now that we have a set of styled layers, we can bring them together as a map.
 
-MBStyle supports styling multiple layers with a single style document. Copy the layers of each of the previous styles into a new MBStyle named ``mbtut_all``. The final style will look like: 
+MBStyle supports styling multiple layers with a single style document. Copy the layers of each of the previous styles into a new MBStyle named ``mbtut_all``. The style will look like: 
 
 .. code-block:: json
 
@@ -63,7 +63,7 @@ MBStyle supports styling multiple layers with a single style document. Copy the 
                     "text-field": "{name}",
                     "text-transform": "uppercase",
                     "text-size": 14,
-                    "text-font": ["Open Sans Regular"],
+                    "text-font": ["PT Sans"],
                     "text-max-width": 100
                 },
                 "paint": {
@@ -180,6 +180,7 @@ MBStyle supports styling multiple layers with a single style document. Copy the 
                 "type": "symbol",
                 "layout": {
                     "text-field": "{NAME}",
+                    "text-font": ["PT Serif"],
                     "text-anchor": "bottom-left",
                     "text-offset": [3,2],
                 }
@@ -212,6 +213,7 @@ MBStyle supports styling multiple layers with a single style document. Copy the 
                 "type": "symbol",
                 "layout": {
                     "text-field": "{NAME}",
+                    "text-font": ["PT Serif"],
                     "text-anchor": "bottom-left",
                     "text-offset": [3,2]
                 }
@@ -245,7 +247,29 @@ To do so:
 
 #. `Install <../geoserver/extensions/vectortiles/install.html#vectortiles-install>`_ the Vector Tiles extension.
 
-#. `Publish <../geoserver/extensions/vectortiles/tutorial.html#vectortiles-tutorial>`_ the ``tutorial`` layer group as ``application/x-protobuf;type=mapbox-vector`` (You only need to do the “Publish vector tiles in GeoWebCache” step).
+#. Publish the ``tutorial`` layer group as ``application/x-protobuf;type=mapbox-vector``:
+
+   i. Navigate to the ``Tile Layers`` page.
+
+      .. figure:: img/tilelayerslink.png
+
+         Tile Layers
+
+      Click ``tutorial`` in the list of layers.
+
+   ii. By default the tile formats are image/jpeg and image/png. Check the boxes for the following vector tile formats:
+
+      * application/json;type=geojson
+      * application/json;type=topojson
+      * application/x-protobuf;type=mapbox-vector
+    
+      .. figure:: img/vectortiles_tileformats.png
+    
+         Vector tiles tile formats
+
+   iii. Click Save.
+
+   iv. Our layer group is now ready to be served.
 
 #. Add a vector and a raster ``"sources"`` parameter to the top-level of your style (change the GeoServer URL as appropriate):
 

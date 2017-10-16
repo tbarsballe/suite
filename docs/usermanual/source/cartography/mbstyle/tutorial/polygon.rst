@@ -42,7 +42,7 @@ Creating a new style
 Name and id
 -----------
 
-The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is a machine reference to the style element, but may also be displayed. ``id`` is a machine reference to the layer. Both should be **lower case** and contain **no spaces**. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
+The style can be given a ``name`` parameter, and layers within the style can be given an ``id`` parameter. ``name`` is the name of the style, and may be displayed. ``id`` is a machine reference to the layer, and should be unique. Also add a ``source-layer`` parameter, which provides a reference to the layer this style should be applied to.
 
 .. note:: When viewing the style in the Layer Preview tab, ensure the ``Preview as style group`` option is checked, to ensure that ``source-layer`` is used to determine the layer(s) to render the style on.
 
@@ -224,16 +224,14 @@ The default labeling parameters are not ideal, but a number of styling options a
         - Change the label text to uppercase
       * - ``text-size: 14``
         - Change the font size to 14
-      * - ``"text-font": ["SansSerif"]``
-        - Change the font to SansSerif
+      * - ``"text-font": ["PT Sans"]``
+        - Change the font to PT Sans
       * - ``text-max-width: 100``
         - Wrap any labels wider than 100 pixels
 
-.. TODO: Add explaination of glyphs for defining font sources
+.. TODO: Add explaination of glyphs for defining font sources (once this is actually implemented)
 
 .. TODO: Add support for bold (presumably its own font)
-
-.. TODO: Add support for label priority? MBStyle doesn't really have this concept?
 
 #. Add the following attributes to the symbol layer paint object:
 
@@ -283,7 +281,7 @@ The default labeling parameters are not ideal, but a number of styling options a
                       "text-field": "{name}",
                       "text-transform": "uppercase",
                       "text-size": 14,
-                      "text-font": ["Open Sans Regular"],
+                      "text-font": ["PT Sans"],
                       "text-max-width": 100
                   },
                   "paint": {
@@ -425,7 +423,7 @@ Suppose we wish to display different colors for each country. The countries laye
                       "text-field": "{name}",
                       "text-transform": "uppercase",
                       "text-size": 14,
-                      "text-font": ["Open Sans Regular"],
+                      "text-font": ["PT Sans"],
                       "text-max-width": 100
                   },
                   "paint": {
@@ -440,8 +438,8 @@ Suppose we wish to display different colors for each country. The countries laye
 
       Adjacent countries will not have the same color
 
-Compacting thematic styles with transformation functions
---------------------------------------------------------
+Compacting thematic styles with functions
+-----------------------------------------
 
 While filters are very useful, the required syntax is still quite long, and much of the content is redundant. The exact same functionality can be accomplished much more concisely using a `categorical function <https://www.mapbox.com/mapbox-gl-js/style-spec/#types-function>`_.
 
@@ -481,7 +479,7 @@ While filters are very useful, the required syntax is still quite long, and much
                       "text-field": "{name}",
                       "text-transform": "uppercase",
                       "text-size": 14,
-                      "text-font": ["Open Sans Regular"],
+                      "text-font": ["PT Sans"],
                       "text-max-width": 100
                   },
                   "paint": {

@@ -41,7 +41,7 @@
                 "text-field": "{name}",
                 "text-transform": "uppercase",
                 "text-size": 14,
-                "text-font": ["Open Sans Regular"],
+                "text-font": ["PT Sans"],
                 "text-max-width": 100
             },
             "paint": {

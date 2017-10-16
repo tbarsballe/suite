@@ -74,7 +74,7 @@
                 "text-field": "{name}",
                 "text-transform": "uppercase",
                 "text-size": 14,
-                "text-font": ["Open Sans Regular"],
+                "text-font": ["PT Sans"],
                 "text-max-width": 100
             },
             "paint": {
@@ -200,6 +200,7 @@
             "type": "symbol",
             "layout": {
                 "text-field": "{NAME}",
+                "text-font": ["PT Serif"],
                 "text-anchor": "bottom-left",
                 "text-offset": [3,2]
             }
@@ -234,6 +235,7 @@
             "type": "symbol",
             "layout": {
                 "text-field": "{NAME}",
+                "text-font": ["PT Serif"],
                 "text-anchor": "bottom-left",
                 "text-offset": [3,2]
             }
