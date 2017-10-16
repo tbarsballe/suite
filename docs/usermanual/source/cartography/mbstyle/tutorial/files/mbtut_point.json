@@ -12,7 +12,8 @@
             "paint": {
                 "circle-color": "#777777",
                 "circle-stroke-color": "#000000",
-                "circle-radius": 3
+                "circle-radius": 3,
+                "circle-stroke-width": 1
             }
         },
         {
@@ -42,7 +43,7 @@
             "layout": {
                 "text-field": "{NAME}",
                 "text-anchor": "bottom-left",
-                "text-offset": [3,2],
+                "text-offset": [3,2]
             }
         },
         {
@@ -61,7 +62,8 @@
                         [0, 2],
                         [40000000, 5]
                     ]
-                }
+                },
+                "circle-stroke-width": 1
             }
         },
         {

@@ -8,7 +8,7 @@
             "source-layer": "countries",
             "paint": {
                 "fill-color": {
-                    "property": "MAPCOLOR7",
+                    "property": "mapcolor7",
                     "type": "categorical",
                     "stops": [
                         [1, "#FFC3C3"], 
@@ -17,7 +17,7 @@
                         [4, "#C3FFE3"],
                         [5, "#C3FFFF"], 
                         [6, "#C3C3FF"],
-                        [7, "#FFC3FF"],
+                        [7, "#FFC3FF"]
                     ]
                 },
                 "fill-opacity": 0.5
@@ -38,7 +38,7 @@
             "id": "countries-symbol",
             "source-layer": "countries",
             "layout": {
-                "text-field": "{NAME}",
+                "text-field": "{name}",
                 "text-transform": "uppercase",
                 "text-size": 14,
                 "text-font": ["Open Sans Regular"],

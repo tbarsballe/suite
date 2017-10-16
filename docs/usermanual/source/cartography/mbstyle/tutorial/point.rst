@@ -50,7 +50,7 @@ The style can be given a ``name`` parameter, and layers within the style can be 
 #. Modify the name and id elements in the default style:
 
    .. code-block::json
-      :emphasize-lines: 3, 6-7, 9-10
+      :emphasize-lines: 3, 6-7, 9-12
       
       {
         "version": 8,
@@ -63,6 +63,8 @@ The style can be given a ``name`` parameter, and layers within the style can be 
                 "paint": {
                     "circle-color": "#777777",
                     "circle-stroke-color": "#000000",
+                    "circle-radius": 3,
+                    "circle-stroke-width": 1
                 }
             }
         ]
@@ -74,7 +76,7 @@ Adding filters and labels
 #. There are a lot of points in this data set, and we don't want to draw all of them. Use the ``ADM0CAP`` attribute and a filter to show only points that correspond to capital cities (``ADM0CAP = 1``):
 
    .. code-block:: json
-      :emphasize-lines: 3,8
+      :emphasize-lines: 3
 
       {
         "version": 8,
@@ -88,7 +90,8 @@ Adding filters and labels
                 "paint": {
                     "circle-color": "#777777",
                     "circle-stroke-color": "#000000",
-                    "circle-radius": 3
+                    "circle-radius": 3,
+                    "circle-stroke-width": 1
                 }
             }
         ]
@@ -97,7 +100,7 @@ Adding filters and labels
 #. Add a symbol layer referencing the ``NAME`` attribute to display the names of the cities:
 
    .. code-block:: json
-      :emphasize-lines: 16-24
+      :emphasize-lines: 17-25
 
       {
         "version": 8,
@@ -111,7 +114,9 @@ Adding filters and labels
                 "paint": {
                     "circle-color": "#777777",
                     "circle-stroke-color": "#000000",
-                    "circle-radius": 3
+                    "circle-radius": 3,
+                    "circle-stroke-width": 1
+
                 }
             },
             {
@@ -227,7 +232,7 @@ To improve the display further, we can add scale rules.
    This results in the following style:
 
    .. code-block:: json
-      :emphasize-lines: 6-47
+      :emphasize-lines: 6-48
 
       {
         "version": 8,
@@ -243,7 +248,8 @@ To improve the display further, we can add scale rules.
                 "paint": {
                     "circle-color": "#777777",
                     "circle-stroke-color": "#000000",
-                    "circle-radius": 3
+                    "circle-radius": 3,
+                    "circle-stroke-width": 1
                 }
             },
             {
@@ -273,7 +279,7 @@ To improve the display further, we can add scale rules.
                 "layout": {
                     "text-field": "{NAME}",
                     "text-anchor": "bottom-left",
-                    "text-offset": [3,2],
+                    "text-offset": [3,2]
                 }
             }
         ]
@@ -300,7 +306,8 @@ To improve the display further, we can add scale rules.
                       [0, 2],
                       [40000000, 5]
                   ]
-              }
+              },
+              "circle-stroke-width": 1
           }
       }
 

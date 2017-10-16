@@ -10,13 +10,21 @@
             ],
             "minZoom": 0,
             "maxZoom": 14
+        },
+        "tutorial-dem": {
+            "type": "raster",
+            "tiles": [
+              "http://localhost:8080/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=tutorial:DEM&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=image/png&TILECOL={x}&TILEROW={y}"
+            ],
+            "minZoom": 0,
+            "maxZoom": 14
         }
     },
     "layers": [
         {
             "id": "dem",
-            "source": "tutorial",
-            "source-layer": "dem",
+            "source": "tutorial-dem",
+            "source-layer": "DEM",
             "type": "raster",
             "paint": {
                 "raster-opacity": 1,
@@ -31,7 +39,7 @@
             "id": "countries-fill",
             "paint": {
                 "fill-color": {
-                    "property": "MAPCOLOR7",
+                    "property": "mapcolor7",
                     "type": "categorical",
                     "stops": [
                         [1, "#FFC3C3"], 
@@ -40,7 +48,7 @@
                         [4, "#C3FFE3"],
                         [5, "#C3FFFF"], 
                         [6, "#C3C3FF"],
-                        [7, "#FFC3FF"],
+                        [7, "#FFC3FF"]
                     ]
                 },
                 "fill-opacity": 0.5
@@ -63,7 +71,7 @@
             "source": "tutorial",
             "source-layer": "countries",
             "layout": {
-                "text-field": "{NAME}",
+                "text-field": "{name}",
                 "text-transform": "uppercase",
                 "text-size": 14,
                 "text-font": ["Open Sans Regular"],
@@ -160,7 +168,8 @@
             "paint": {
                 "circle-color": "#777777",
                 "circle-stroke-color": "#000000",
-                "circle-radius": 3
+                "circle-radius": 3,
+                "circle-stroke-width": 1
             }
         },
         {
@@ -192,7 +201,7 @@
             "layout": {
                 "text-field": "{NAME}",
                 "text-anchor": "bottom-left",
-                "text-offset": [3,2],
+                "text-offset": [3,2]
             }
         },
         {
@@ -212,7 +221,8 @@
                         [0, 2],
                         [40000000, 5]
                     ]
-                }
+                },
+                "circle-stroke-width": 1
             }
         },
         {

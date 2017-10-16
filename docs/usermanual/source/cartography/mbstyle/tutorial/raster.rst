@@ -61,7 +61,7 @@ The style can be given a ``name`` parameter, and layers within the style can be 
         "layers": [
             {
                 "id": "dem",
-                "source-layer": "dem",
+                "source-layer": "DEM",
                 "type": "raster",
                 "paint": {
                     "raster-opacity": 1
@@ -84,7 +84,7 @@ Adding contrast
           "layers": [
               {
                   "id": "dem",
-                  "source-layer": "dem",
+                  "source-layer": "DEM",
                   "type": "raster",
                   "paint": {
                       "raster-opacity": 1,

@@ -16,7 +16,7 @@ MBStyle supports styling multiple layers with a single style document. Copy the 
         "layers": [
             {
                 "id": "dem",
-                "source-layer": "dem",
+                "source-layer": "DEM",
                 "type": "raster",
                 "paint": {
                     "raster-opacity": 1,
@@ -30,7 +30,7 @@ MBStyle supports styling multiple layers with a single style document. Copy the 
                 "id": "countries-fill",
                 "paint": {
                     "fill-color": {
-                        "property": "MAPCOLOR7",
+                        "property": "mapcolor7",
                         "type": "categorical",
                         "stops": [
                             [1, "#FFC3C3"], 
@@ -39,7 +39,7 @@ MBStyle supports styling multiple layers with a single style document. Copy the 
                             [4, "#C3FFE3"],
                             [5, "#C3FFFF"], 
                             [6, "#C3C3FF"],
-                            [7, "#FFC3FF"],
+                            [7, "#FFC3FF"]
                         ]
                     },
                     "fill-opacity": 0.5
@@ -60,7 +60,7 @@ MBStyle supports styling multiple layers with a single style document. Copy the 
                 "id": "countries-symbol",
                 "source-layer": "countries",
                 "layout": {
-                    "text-field": "{NAME}",
+                    "text-field": "{name}",
                     "text-transform": "uppercase",
                     "text-size": 14,
                     "text-font": ["Open Sans Regular"],
@@ -150,7 +150,8 @@ MBStyle supports styling multiple layers with a single style document. Copy the 
                 "paint": {
                     "circle-color": "#777777",
                     "circle-stroke-color": "#000000",
-                    "circle-radius": 3
+                    "circle-radius": 3,
+                    "circle-stroke-width": 1
                 }
             },
             {
@@ -199,7 +200,8 @@ MBStyle supports styling multiple layers with a single style document. Copy the 
                             [0, 2],
                             [40000000, 5]
                         ]
-                    }
+                    },
+                    "circle-stroke-width": 1
                 }
             },
             {
@@ -221,15 +223,15 @@ Normally, styles are associated with a layer and rendered together with that lay
 
 This will produce a map that looks like the following at various zoom levels:
 
-.. figure:: ../../ysld/tutorial/img/map_zoom_1.png
+.. figure:: img/map_zoom_1.png
 
    Map at world scale
 
-.. figure:: ../../ysld/tutorial/img/map_zoom_2.png
+.. figure:: img/map_zoom_2.png
 
    Map at region scale
 
-.. figure:: ../../ysld/tutorial/img/map_zoom_3.png
+.. figure:: img/map_zoom_3.png
 
    Map at city scale
 
@@ -239,13 +241,13 @@ Client-side styling
 You can also use this GeoServer MBStyle with client-side applications which support MapBox Styles, such as OpenLayers and MapBox.
 To do so:
 
-#. `Enable CORS <../geoserver/production/container.html#enable-cors>`_ in GeoServer.
+#. :ref:`Enable CORS <sysadmin.cors>` in GeoServer. This allows third-party applications to access the style and any spritesheets hosted by GeoServer.
 
 #. `Install <../geoserver/extensions/vectortiles/install.html#vectortiles-install>`_ the Vector Tiles extension.
 
 #. `Publish <../geoserver/extensions/vectortiles/tutorial.html#vectortiles-tutorial>`_ the ``tutorial`` layer group as ``application/x-protobuf;type=mapbox-vector`` (You only need to do the “Publish vector tiles in GeoWebCache” step).
 
-#. Add a ``"sources"`` parameter to the top-level of your style:
+#. Add a vector and a raster ``"sources"`` parameter to the top-level of your style (change the GeoServer URL as appropriate):
 
    .. code-block:: json
 
@@ -257,10 +259,22 @@ To do so:
               ],
               "minZoom": 0,
               "maxZoom": 14
+          },
+          "tutorial-dem": {
+            "type": "raster",
+            "tiles": [
+              "http://localhost:8080/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=tutorial:DEM&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=image/png&TILECOL={x}&TILEROW={y}"
+            ],
+            "minZoom": 0,
+            "maxZoom": 14
           }
       }
 
-#. Add ``"source": "tutorial"`` to each layer in the style. The final style will look like: 
+#. Add ``"source": "tutorial"`` to each vector layer in the style and ``"source": "tutorial-dem"`` to the one raster layer. The final style will look like: 
 
    .. literalinclude:: files/mbtut_all.json
       :language: json
+
+#. Then, you can use this style in any front-end application which supports MapBox Styles and can access your GeoServer. The style is available from ``http://localhost:8080/geoserver/styles/mbtut_all.json``.
+
+.. note:: :download:`Download the final map style <files/mbtut_all.json>`
