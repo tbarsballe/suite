@@ -101,9 +101,7 @@ html_theme_options = {
   #'sticky_navigation' : True  # Set to False to disable the sticky nav while scrolling.
   'is_community': True, # Community Docs flag for Boundless Server component docs
   'display_zendesk': True, # Display link to report doc bugs to Zendesk
-  'display_version': True,  # Whether to show version number
-  'server_url': 'geoserver' # the url path within Server e.g. geoserver for boundless-server-docs/geoserver
-
+  'display_version': True  # Whether to show version number
 }
 
 if os.environ.get('HTML_THEME_PATH'):
