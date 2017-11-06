@@ -27,11 +27,11 @@
       <div class="server_logo">
     {% endif %}
 
-      <a href="{{ theme_documentation_root }}/{{ theme_server_url.lower() }}"></a></div>
+      <a href="{{  pathto(master_doc) }}"></a></div>
     {% if theme_project_version %}
       <div class="component_version_info">Version {{ theme_project_version }}</div>
     {% endif %}
     <div class="back-to-server">
-      <a href="{{ theme_documentation_root }}"><div class="back-to-server-inner"></div></a>
+      <a href="{{  pathto(master_doc) | replace('index.html','') | replace('#','') }}../index.html"><div class="back-to-server-inner"></div></a>
     </div>
 </div>

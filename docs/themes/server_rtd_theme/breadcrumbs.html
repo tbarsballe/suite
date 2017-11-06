@@ -1,7 +1,7 @@
 <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     {% if project != "Boundless Server" %}
-      <li><a href="{{ theme_documentation_root }}"> Boundless Server </a> &raquo;</li>
+      <li><a href="{{ pathto(master_doc) | replace('index.html','') | replace('#','') }}../index.html"> Boundless Server </a> &raquo;</li>
       <li><a href="{{ pathto(master_doc) }}"> {{ shorttitle }} </a> &raquo;</li>
     {% else %}
       <li><a href="{{ pathto(master_doc) }}">Boundless Server </a> &raquo;</li>
