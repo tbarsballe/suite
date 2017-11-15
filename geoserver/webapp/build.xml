@@ -2,7 +2,7 @@
   <import file="../../build/common.xml"/>
 
   <property name="data.dir" value="../data_dir/target"/>
-  <property name="war.dir" value="target/geoserver"/>
+  <property name="war.dir" value="web-app/target/geoserver"/>
   <property name="war.file" value="${war.dir}.war"/>
 
   <target name="build" depends="init,build-server" description="Builds project" />
@@ -40,6 +40,7 @@
   <target name="serve" description="Runs GeoServer">
     <antcall target="mvn">
       <param name="goals" value="dependency:copy-dependencies"/>
+      <param name="dir" value="web-app"/>
     </antcall>
     <condition property="jetty.port" value="${jetty.port}" else="8080">
       <isset property="jetty.port"/>
@@ -48,13 +49,13 @@
       else="data">
       <isset property="GEOSERVER_DATA_DIR"/>
     </condition>
-    <java classname="org.geoserver.test.Start" fork="true">
+    <java classname="com.boundlessgeo.geoserver.Start" fork="true" dir="web-app">
       <sysproperty key="jetty.port" value="${jetty.port}"/>
       <sysproperty key="GEOSERVER_DATA_DIR" value="${geoserver.data_dir}"/>
       <classpath>
-        <pathelement path="target/classes"/>
-        <pathelement path="target/test-classes"/>
-        <fileset dir="target/dependency" includes="*.jar"/>
+        <pathelement path="web-app/target/classes"/>
+        <pathelement path="web-app/target/test-classes"/>
+        <fileset dir="web-app/target/dependency" includes="*.jar"/>
       </classpath>
     </java>
   </target>

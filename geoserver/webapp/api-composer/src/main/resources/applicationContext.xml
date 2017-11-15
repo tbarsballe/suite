@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:mvc="http://www.springframework.org/schema/mvc"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+    
+    <!-- Hide spring mvc MappedInterceptor beans from GeoserverExtensions -->
+    <bean class="com.boundlessgeo.geoserver.MappedInterceptorFilter">
+    </bean>
+    
+    <!-- Hide the composer-importer bean from geoserver -->
+    <bean class="com.boundlessgeo.geoserver.ComposerImporterFilter">
+    </bean>
+    <bean id="composer-importer" class="org.geoserver.importer.Importer">
+      <constructor-arg ref="catalog"/>
+    </bean>
+    <!-- configure thumbnail cache -->
+    <bean id="config" class="com.boundlessgeo.geoserver.AppConfiguration">
+      <constructor-arg ref="catalog"/>
+    </bean>
+    
+    <!-- configure FTL template loading path -->
+    <bean class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+      <property name="templateLoaderPath" value="/WEB-INF/ftl/"/>
+    </bean>
+    
+    <!-- configure ftl view resolver -->
+    <bean class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+      <property name="cache" value="true"/>
+      <property name="prefix" value=""/>
+      <property name="suffix" value=".ftl"/>
+    </bean>
+
+    <context:component-scan base-package="com.boundlessgeo.geoserver"/>
+
+    <mvc:interceptors>
+        <!-- intercept all /app/api/** routes and disable caching -->
+        <mvc:interceptor>
+            <mvc:mapping path="/app/api/**"/>
+            <bean class="org.springframework.web.servlet.mvc.WebContentInterceptor" >
+              <property name="cacheSeconds" value="0"/>
+              <property name="useExpiresHeader" value="true"/>
+              <property name="useCacheControlHeader" value="true"/>
+              <property name="useCacheControlNoStore" value="true"/>
+            </bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+</beans>
+
