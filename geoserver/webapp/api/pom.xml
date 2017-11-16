@@ -13,7 +13,7 @@
   <artifactId>api</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>Boundless Server GeoServer API</name>
+  <name>Boundless Server GeoServer Web API</name>
 
   <dependencies>
 
