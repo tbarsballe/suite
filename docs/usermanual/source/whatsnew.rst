@@ -3,9 +3,24 @@
 What's new in |version|
 =======================
 
+This version is a bugfix release, and includes various fixes for GeoWebCache and GeoServer:
+
+* Fixed errors in the GWC Seed endpoints.
+
+* GWC FullWMS mode works again.
+
+* The :ref:`GeoServices REST API <intro.extensions.gsr>` extension has many improvements in compatibility with the latest official client API
+
+* Several rendering errors in the `MBStyle <geoserver/styling/mbstyle/index.html>`_ extension have been fixed.
+
+* And more!
+
+What's new in 1.0.0
+===================
+
 This version contains numerous component upgrades and bug fixes. Highlights include:
 
-* **Boundless Suite** has been renamed to **Boundless Server**, and the version has been reset to |version|. This follows from **Boundless Suite 4.10.0**.
+* **Boundless Suite** has been renamed to **Boundless Server**, and the version has been reset to 1.0.0. This follows from **Boundless Suite 4.10.0**.
 
 * The GeoServer REST API has been updated, and includes improved `documentation <geoserver/rest/index.html>`_. The updated API should still be backwards-compatible.
 
