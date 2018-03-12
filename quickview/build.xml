@@ -1,0 +1,35 @@
+<project name="quickview" default="build">
+  <import file="../build/common.xml"/>
+
+  <property name="quickview.dir" value="sdk-apps/quickview"/>
+  <property name="quickview.war" value="quickview.war"/>
+
+  <target name="clean" unless="skip.quickview"
+      description="Clean Quickview">
+    <delete file="${quickview.dir}/${quickview.war}" failonerror="false" />
+    <delete dir="${quickview.dir}/build" failonerror="false" />
+    <delete dir="${quickview.dir}/node_modules" failonerror="false" />
+    <delete dir="target" failonerror="false" />
+  </target>
+
+  <target name="build" unless="skip.quickview"
+      description="Build Quickview">
+    <exec executable="npm" dir="${quickview.dir}">
+      <arg line="install"/>
+    </exec>
+  </target>
+
+  <target name="assemble">
+    <exec executable="npm" dir="${quickview.dir}">
+      <arg line="run createzip --  --output-file=${quickview.war}"/>
+    </exec>
+    <antcall target="assemble-artifact">
+      <param name="dir" value="${quickview.dir}"/>
+      <param name="includes" value="${quickview.war}"/>
+    </antcall>
+  </target>
+
+  <target name="publish">
+    <antcall target="publish-artifact"/>
+  </target>
+</project>
