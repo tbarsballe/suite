@@ -30,3 +30,6 @@
 	path = geoserver/externals/gsr/gsr
 	url = git@github.com:boundlessgeo/gsr.git
 	branch = master
+[submodule "quickview/sdk-apps"]
+	path = quickview/sdk-apps
+	url = https://github.com/boundlessgeo/sdk-apps.git
