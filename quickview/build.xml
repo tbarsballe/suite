@@ -20,8 +20,8 @@
   </target>
 
   <target name="assemble">
-    <exec executable="npm" dir="${quickview.dir}">
-      <arg line="run createzip --  --output-file=${quickview.war}"/>
+    <exec executable="npm" dir="${quickview.dir}" inputstring="${quickview.war}${line.separator}">
+      <arg line="run package"/>
     </exec>
     <antcall target="assemble-artifact">
       <param name="dir" value="${quickview.dir}"/>
