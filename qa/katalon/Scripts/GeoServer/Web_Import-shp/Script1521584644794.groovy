@@ -24,43 +24,43 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost:8080/geoserver/web/')
 
-WebUI.setText(findTestObject('Web/GeoServer/Page_GeoServer Welcome/input_username'), 'admin')
+WebUI.setText(findTestObject('Web/GeoServer/Page_Welcome/input_username'), 'admin')
 
-WebUI.setText(findTestObject('Web/GeoServer/Page_GeoServer Welcome/input_password'), 'geoserver')
+WebUI.setText(findTestObject('Web/GeoServer/Page_Welcome/input_password'), 'geoserver')
 
-WebUI.sendKeys(findTestObject('Web/GeoServer/Page_GeoServer Welcome/input_password'), Keys.chord(Keys.ENTER))
+WebUI.sendKeys(findTestObject('Web/GeoServer/Page_Welcome/input_password'), Keys.chord(Keys.ENTER))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Welcome/a_Create workspaces'))
+WebUI.click(findTestObject('Web/GeoServer/Page_Welcome/a_Create workspaces'))
 
-WebUI.setText(findTestObject('Web/GeoServer/Page_GeoServer New Workspace/input_pname'), 'test')
+WebUI.setText(findTestObject('Web/GeoServer/Page_NewWorkspace/input_pname'), 'test')
 
-WebUI.setText(findTestObject('Web/GeoServer/Page_GeoServer New Workspace/input_uri'), 'http://test.com')
+WebUI.setText(findTestObject('Web/GeoServer/Page_NewWorkspace/input_uri'), 'http://test.com')
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer New Workspace/a_Submit'))
+WebUI.click(findTestObject('Web/GeoServer/Page_NewWorkspace/a_Submit'))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Workspaces/span_Import Data'))
+WebUI.click(findTestObject('Web/GeoServer/Page_Workspaces/span_Import Data'))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Import Data/span_Next'))
+WebUI.click(findTestObject('Web/GeoServer/Page_ImportData/span_Next'))
 
-WebUI.setText(findTestObject('Web/GeoServer/Page_GeoServer Import Data/input_panelcontentformfile'), '/Users/tbarsballe/Documents/data/spatial_files/shapefiles/medford/workspaces/medford/data/buildings.zip')
+WebUI.setText(findTestObject('Web/GeoServer/Page_ImportData/input_panelcontentformfile'), '/Users/tbarsballe/Documents/data/spatial_files/shapefiles/medford/workspaces/medford/data/buildings.zip')
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Import Data/a_Next'))
+WebUI.click(findTestObject('Web/GeoServer/Page_ImportData/a_Next'))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Import Tasks/input_taskslistContaineritems1'))
+WebUI.click(findTestObject('Web/GeoServer/Page_ImportTasks/input_taskslistContaineritems1'))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Import Tasks/span_Import'))
+WebUI.click(findTestObject('Web/GeoServer/Page_ImportTasks/span_Import'))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Import Tasks/span_Import successful.'))
+WebUI.click(findTestObject('Web/GeoServer/Page_ImportTasks/span_Import successful.'))
 
-WebUI.verifyElementPresent(findTestObject('Web/GeoServer/Page_GeoServer Import Tasks/span_Import successful.'), 10)
+WebUI.verifyElementPresent(findTestObject('Web/GeoServer/Page_ImportTasks/span_Import successful.'), 10)
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Import Tasks/span_Workspaces'))
+WebUI.click(findTestObject('Web/GeoServer/Page_ImportTasks/span_Workspaces'))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Workspaces/input_tablelistContaineritems1'))
+WebUI.click(findTestObject('Web/GeoServer/Page_Workspaces/input_tablelistContaineritems1'))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Workspaces/a_Remove selected workspace(s)'))
+WebUI.click(findTestObject('Web/GeoServer/Page_Workspaces/a_Remove selected workspace(s)'))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_GeoServer Workspaces/a_OK'))
+WebUI.click(findTestObject('Web/GeoServer/Page_Workspaces/a_OK'))
 
 WebUI.closeBrowser()
 

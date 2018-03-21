@@ -24,11 +24,11 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost:8080/geoserver/web/')
 
-WebUI.setText(findTestObject('Web/GeoServer/Page_GeoServer Welcome/input_username'), 'admin')
+WebUI.setText(findTestObject('Web/GeoServer/Page_Welcome/input_username'), 'admin')
 
-WebUI.setText(findTestObject('Web/GeoServer/Page_GeoServer Welcome/input_password'), 'geoserver')
+WebUI.setText(findTestObject('Web/GeoServer/Page_Welcome/input_password'), 'geoserver')
 
-WebUI.sendKeys(findTestObject('Web/GeoServer/Page_GeoServer Welcome/input_password'), Keys.chord(Keys.ENTER))
+WebUI.sendKeys(findTestObject('Web/GeoServer/Page_Welcome/input_password'), Keys.chord(Keys.ENTER))
 
 WebUI.verifyTextPresent('Logged in as', false)
 
