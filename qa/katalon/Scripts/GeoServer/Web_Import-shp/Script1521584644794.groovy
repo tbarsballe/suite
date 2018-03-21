@@ -40,15 +40,19 @@ WebUI.click(findTestObject('Web/GeoServer/Page_NewWorkspace/a_Submit'))
 
 WebUI.click(findTestObject('Web/GeoServer/Page_Workspaces/span_Import Data'))
 
-WebUI.click(findTestObject('Web/GeoServer/Page_ImportData/span_Next'))
+WebUI.click(findTestObject('Web/GeoServer/Page_ImportData/a_Browse...'))
 
-WebUI.setText(findTestObject('Web/GeoServer/Page_ImportData/input_panelcontentformfile'), '/Users/tbarsballe/Documents/data/spatial_files/shapefiles/medford/workspaces/medford/data/buildings.zip')
+WebUI.click(findTestObject('Web/GeoServer/Page_ImportData/span_test_data'))
+
+WebUI.click(findTestObject('Web/GeoServer/Page_ImportData/span_buildings.zip'))
 
 WebUI.click(findTestObject('Web/GeoServer/Page_ImportData/a_Next'))
 
 WebUI.click(findTestObject('Web/GeoServer/Page_ImportTasks/input_taskslistContaineritems1'))
 
 WebUI.click(findTestObject('Web/GeoServer/Page_ImportTasks/span_Import'))
+
+WebUI.delay(5)
 
 WebUI.click(findTestObject('Web/GeoServer/Page_ImportTasks/span_Import successful.'))
 
