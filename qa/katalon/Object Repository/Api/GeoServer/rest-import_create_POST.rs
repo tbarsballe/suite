@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <WebServiceRequestEntity>
    <description></description>
-   <name>rest-workspace-test-POST</name>
+   <name>rest-import_create_POST</name>
    <tag></tag>
-   <elementGuidId>0c94bc5e-11d2-4438-a4ba-504b582eb4ef</elementGuidId>
+   <elementGuidId>b9313feb-071f-4923-a77e-9319135d3940</elementGuidId>
    <selectorMethod>BASIC</selectorMethod>
    <useRalativeImagePath>false</useRalativeImagePath>
-   <httpBody>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>
-&lt;workspace>
-	&lt;name>test&lt;/name>
-&lt;/workspace></httpBody>
+   <httpBody>{
+  &quot;import&quot;: {
+    &quot;targetWorkspace&quot;: {
+      &quot;workspace&quot;: {
+        &quot;name&quot;: &quot;test&quot;
+      }
+    }
+  }
+}</httpBody>
    <httpHeaderProperties>
       <isSelected>true</isSelected>
       <matchCondition>equals</matchCondition>
@@ -22,10 +27,17 @@
       <matchCondition>equals</matchCondition>
       <name>Content-Type</name>
       <type>Main</type>
-      <value>application/xml</value>
+      <value>application/json</value>
+   </httpHeaderProperties>
+   <httpHeaderProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>Accept</name>
+      <type>Main</type>
+      <value>application/json</value>
    </httpHeaderProperties>
    <restRequestMethod>POST</restRequestMethod>
-   <restUrl>http://localhost:8080/geoserver/rest/workspaces</restUrl>
+   <restUrl>http://localhost:8080/geoserver/rest/imports</restUrl>
    <serviceType>RESTful</serviceType>
    <soapBody></soapBody>
    <soapHeader></soapHeader>

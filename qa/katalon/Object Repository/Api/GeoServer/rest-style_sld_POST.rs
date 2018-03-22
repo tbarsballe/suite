@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <WebServiceRequestEntity>
    <description></description>
-   <name>rest-style_POST</name>
+   <name>rest-style_sld_POST</name>
    <tag></tag>
    <elementGuidId>475e2384-3d5d-4898-99cf-24ad6f409bf3</elementGuidId>
    <selectorMethod>BASIC</selectorMethod>

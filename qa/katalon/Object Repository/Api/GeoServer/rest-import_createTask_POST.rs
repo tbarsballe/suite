@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <WebServiceRequestEntity>
    <description></description>
-   <name>rest-import-run-POST</name>
+   <name>rest-import_createTask_POST</name>
    <tag></tag>
-   <elementGuidId>84e05908-2487-4fa7-aae7-d4538d222ced</elementGuidId>
+   <elementGuidId>18d4d246-ecb1-4d53-be36-eeedcaa9be09</elementGuidId>
    <selectorMethod>BASIC</selectorMethod>
    <useRalativeImagePath>false</useRalativeImagePath>
    <httpBody></httpBody>
@@ -19,10 +19,10 @@
       <matchCondition>equals</matchCondition>
       <name>Content-Type</name>
       <type>Main</type>
-      <value>application/json</value>
+      <value>application/zip</value>
    </httpHeaderProperties>
    <restRequestMethod>POST</restRequestMethod>
-   <restUrl>http://localhost:8080/geoserver/rest/imports/1</restUrl>
+   <restUrl>http://localhost:8080/geoserver/rest/imports/1/tasks</restUrl>
    <serviceType>RESTful</serviceType>
    <soapBody></soapBody>
    <soapHeader></soapHeader>

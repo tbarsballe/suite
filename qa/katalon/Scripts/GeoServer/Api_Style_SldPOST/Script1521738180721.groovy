@@ -20,16 +20,16 @@ import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
 import internal.GlobalVariable as GlobalVariable
 
 'Ensure style doesn\'t exist'
-WS.sendRequest(findTestObject('Api/GeoServer/rest-style-sld_DELETE'))
+WS.sendRequest(findTestObject('Api/GeoServer/rest-style_red_polygon_DELETE'))
 
 'Create style'
-response = WS.sendRequest(findTestObject('Api/GeoServer/rest-style_POST'))
+response = WS.sendRequest(findTestObject('Api/GeoServer/rest-style_sld_POST'))
 
 'Verify created'
 WS.verifyResponseStatusCode(response, 201)
 
 'Delete Style'
-response = WS.sendRequest(findTestObject('Api/GeoServer/rest-style-sld_DELETE'))
+response = WS.sendRequest(findTestObject('Api/GeoServer/rest-style_red_polygon_DELETE'))
 
 'Verify Deleted'
 WS.verifyResponseStatusCode(response, 200)

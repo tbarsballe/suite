@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <WebServiceRequestEntity>
    <description></description>
-   <name>rest-import-task-create-POST</name>
+   <name>rest-workspace_test_POST</name>
    <tag></tag>
-   <elementGuidId>18d4d246-ecb1-4d53-be36-eeedcaa9be09</elementGuidId>
+   <elementGuidId>0c94bc5e-11d2-4438-a4ba-504b582eb4ef</elementGuidId>
    <selectorMethod>BASIC</selectorMethod>
    <useRalativeImagePath>false</useRalativeImagePath>
-   <httpBody></httpBody>
+   <httpBody>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>
+&lt;workspace>
+	&lt;name>test&lt;/name>
+&lt;/workspace></httpBody>
    <httpHeaderProperties>
       <isSelected>true</isSelected>
       <matchCondition>equals</matchCondition>
@@ -19,10 +22,10 @@
       <matchCondition>equals</matchCondition>
       <name>Content-Type</name>
       <type>Main</type>
-      <value>application/zip</value>
+      <value>application/xml</value>
    </httpHeaderProperties>
    <restRequestMethod>POST</restRequestMethod>
-   <restUrl>http://localhost:8080/geoserver/rest/imports/1/tasks</restUrl>
+   <restUrl>http://localhost:8080/geoserver/rest/workspaces</restUrl>
    <serviceType>RESTful</serviceType>
    <soapBody></soapBody>
    <soapHeader></soapHeader>

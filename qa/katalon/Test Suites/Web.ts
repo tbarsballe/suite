@@ -21,6 +21,6 @@
       <guid>cfa8c8e9-9db9-45f7-a07b-18f84ffbd36b</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/GeoServer/Web_Import-shp</testCaseId>
+      <testCaseId>Test Cases/GeoServer/Web_Import_Shp</testCaseId>
    </testCaseLink>
 </TestSuiteEntity>

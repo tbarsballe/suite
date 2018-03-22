@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <WebServiceRequestEntity>
    <description></description>
-   <name>rest-style-sld_DELETE</name>
+   <name>rest-style_red_polygon_DELETE</name>
    <tag></tag>
    <elementGuidId>13ca4d19-202c-4582-81f9-97f21e979605</elementGuidId>
    <selectorMethod>BASIC</selectorMethod>
