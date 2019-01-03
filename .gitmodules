@@ -33,3 +33,6 @@
 [submodule "quickview/sdk-apps"]
 	path = quickview/sdk-apps
 	url = https://github.com/boundlessgeo/sdk-apps.git
+[submodule "geoserver/externals/spatialstatistics/spatial_statistics_for_geotools_udig"]
+	path = geoserver/externals/spatialstatistics/spatial_statistics_for_geotools_udig
+	url = https://github.com/boundlessgeo/spatial_statistics_for_geotools_udig.git

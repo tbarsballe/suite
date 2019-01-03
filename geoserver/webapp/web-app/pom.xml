@@ -111,6 +111,28 @@
       <artifactId>gs-web-wps</artifactId>
       <version>${gs.version}</version>
     </dependency>
+    <!-- TODO: Requires GDAL
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-process-spatialstatistics</artifactId>
+      <version>21-SNAPSHOT-BOUNDLESS-001</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.thoughtworks.xstream</groupId>
+          <artifactId>xstream</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>it.geosolutions.imageio-ext</groupId>
+          <artifactId>imageio-ext-grib1</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.geoserver</groupId>
+      <artifactId>gs-wps-spatialstatistics</artifactId>
+      <version>2.15-SNAPSHOT-BOUNDLESS-001</version>
+    </dependency>
+    -->
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-geopkg</artifactId>

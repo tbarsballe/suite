@@ -33,3 +33,11 @@ Ant build targets:
      build  Builds project
      help   Print help
      serve  Runs GeoServer
+
+### Spatial Statistics
+
+We currently use a [fork](https://github.com/boundlessgeo/spatial_statistics_for_geotools_udig/tree/boundless-build) of the 
+[Spatial Statistics](https://github.com/mapplus/spatial_statistics_for_geotools_udig) WPS processes with updated versions.  Builds should be should be
+deployed to the `boundless-server` repository on Artifactory.  Check if upstream has changed to update versions or if changes need to be merged into our fork before building.
+
+The spatialstatistics submodule is in [../externals/spatialstatistics](../externals/spatialstatistics).

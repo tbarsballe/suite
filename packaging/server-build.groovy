@@ -163,6 +163,12 @@ pipeline {
         archiveBuildZip('marlin')
       }
     }
+    stage('Build-SpatialStatistics') {
+      steps {
+        sonarScan('suite/geoserver/externals/spatialstatistics/','SpatialStatistics',true)
+        antBuild('suite/geoserver/externals/spatialstatistics/build.xml','clean build assemble publish')
+      }
+    }
     stage('Build-GSR') {
       steps {
         sonarScan('suite/geoserver/externals/gsr/','GSR',true)

@@ -1,6 +1,6 @@
 <project name="geoserver.externals" default="build">
   <import file="../../build/common.xml"/>
-  <property name="geoserver.externals.modules" value="geoserver-exts,marlin,geoscript,geomesa,gsr"/>
+  <property name="geoserver.externals.modules" value="geoserver-exts,marlin,spatialstatistics,geoscript,geomesa,gsr"/>
 
   <target name="build" description="Builds project">
     <for list="${geoserver.externals.modules}" param="mod">
